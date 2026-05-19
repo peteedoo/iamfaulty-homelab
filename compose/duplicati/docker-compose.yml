@@ -1,0 +1,20 @@
+services:
+  duplicati:
+    image: lscr.io/linuxserver/duplicati:latest
+    container_name: duplicati
+    platform: linux/arm64
+    restart: unless-stopped
+    environment:
+      - PUID=501
+      - PGID=20
+      - DUPLICATI__WEBSERVICE_PASSWORD=${DUPLICATI__WEBSERVICE_PASSWORD}
+      - SETTINGS_ENCRYPTION_KEY=${SETTINGS_ENCRYPTION_KEY}
+      - TZ=America/Chicago
+    ports: ["127.0.0.1:8200:8200"]
+    volumes:
+      - /Users/peteedoo/homelab-data/duplicati:/config
+      - /Volumes/homelab:/source/homelab:ro
+      - /Users/peteedoo/homelab-data:/source/homelab-data:ro
+      - /Users/peteedoo/.openclaw:/source/openclaw:ro
+      - /Users/peteedoo/.claude/skills:/source/claude-skills:ro
+      - /Volumes/homelab/backups/duplicati:/target:rw

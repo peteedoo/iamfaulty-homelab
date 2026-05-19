@@ -1,0 +1,19 @@
+services:
+  dashboard:
+    build:
+      context: /Users/peteedoo/homelab-data/stack-status
+      dockerfile: Dockerfile
+    image: stack-status:latest
+    container_name: dashboard
+    platform: linux/arm64
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3004:3004"
+    environment:
+      - PORT=3004
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

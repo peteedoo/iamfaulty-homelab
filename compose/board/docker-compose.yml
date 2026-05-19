@@ -1,0 +1,58 @@
+services:
+  planka-db:
+    image: postgres:16-alpine
+    container_name: planka-db
+    platform: linux/arm64
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=planka
+      - POSTGRES_PASSWORD=${PLANKA_DB_PASSWORD}
+      - POSTGRES_DB=planka
+    volumes:
+      - planka-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U planka -d planka"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  planka:
+    image: ghcr.io/plankanban/planka:latest
+    container_name: planka
+    platform: linux/arm64
+    restart: unless-stopped
+    depends_on:
+      planka-db:
+        condition: service_healthy
+    environment:
+      - BASE_URL=${PLANKA_BASE_URL}
+      - DATABASE_URL=postgresql://planka:${PLANKA_DB_PASSWORD}@planka-db/planka
+      - SECRET_KEY=${PLANKA_SECRET_KEY}
+      - DEFAULT_ADMIN_EMAIL=${PLANKA_ADMIN_EMAIL}
+      - DEFAULT_ADMIN_PASSWORD=${PLANKA_ADMIN_PASSWORD}
+      - DEFAULT_ADMIN_NAME=${PLANKA_ADMIN_NAME}
+      - DEFAULT_ADMIN_USERNAME=${PLANKA_ADMIN_USERNAME}
+    ports:
+      - "127.0.0.1:3333:1337"
+    volumes:
+      - planka-data:/app/public/user-avatars
+      - planka-data:/app/public/project-background-images
+      - planka-data:/app/private/attachments
+
+  board-dashboard:
+    build: ./dashboard
+    container_name: board-dashboard
+    platform: linux/arm64
+    restart: unless-stopped
+    depends_on:
+      - planka
+    environment:
+      - PLANKA_URL=http://planka:1337
+      - PLANKA_EMAIL=${PLANKA_ADMIN_EMAIL}
+      - PLANKA_PASSWORD=${PLANKA_ADMIN_PASSWORD}
+    ports:
+      - "127.0.0.1:3334:8000"
+
+volumes:
+  planka-data:
+  planka-db:

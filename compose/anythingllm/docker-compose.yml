@@ -1,0 +1,14 @@
+services:
+  anythingllm:
+    image: mintplexlabs/anythingllm:latest
+    container_name: anythingllm
+    platform: linux/arm64
+    restart: unless-stopped
+    ports:
+      - "3002:3001"
+    volumes:
+      - /Users/peteedoo/homelab-data/anythingllm:/app/server/storage
+    environment:
+      - STORAGE_DIR=/app/server/storage
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

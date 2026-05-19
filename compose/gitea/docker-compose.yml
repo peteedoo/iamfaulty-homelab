@@ -1,0 +1,16 @@
+services:
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    platform: linux/arm64
+    restart: unless-stopped
+    environment:
+      - USER_UID=501
+      - USER_GID=20
+      - TZ=America/Chicago
+      - GITEA__service__DISABLE_REGISTRATION=true
+    ports:
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:2222:22"
+    volumes:
+      - /Users/peteedoo/homelab-data/gitea:/data

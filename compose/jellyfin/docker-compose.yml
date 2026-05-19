@@ -1,0 +1,21 @@
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    platform: linux/arm64
+    restart: unless-stopped
+    environment:
+      - TZ=America/Chicago
+    ports:
+      - "8096:8096"
+    volumes:
+      - /Users/peteedoo/homelab-data/jellyfin/config:/config
+      - /Users/peteedoo/homelab-data/jellyfin/cache:/cache
+      - /Volumes/homelab/media:/media:ro
+    networks:
+      - default
+      - proxy
+
+networks:
+  proxy:
+    external: true

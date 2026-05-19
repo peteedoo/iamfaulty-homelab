@@ -1,0 +1,31 @@
+services:
+  beszel:
+    image: henrygd/beszel:latest
+    container_name: beszel
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8089:8090"
+    volumes:
+      - ~/.local/beszel/data:/beszel_data
+      - ~/.local/beszel/socket:/beszel_socket
+    networks:
+      - proxy
+
+  beszel-agent:
+    image: henrygd/beszel-agent:latest
+    container_name: beszel-agent
+    restart: unless-stopped
+    ports:
+      - "45876:45876"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      LISTEN: 0.0.0.0:45876
+      KEY: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFuRRjdbWI9TEfUU4mNIOu0PMW7ZIRkMe2vR2uyD/HbB"
+      HUB_URL: "http://host.docker.internal:8089"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

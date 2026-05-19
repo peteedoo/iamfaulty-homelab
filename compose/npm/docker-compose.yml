@@ -1,0 +1,20 @@
+services:
+  npm:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: npm
+    platform: linux/arm64
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "127.0.0.1:81:81"
+    volumes:
+      - /Users/peteedoo/homelab-data/npm:/data
+      - /Users/peteedoo/homelab-data/npm/letsencrypt:/etc/letsencrypt
+    networks:
+      - default
+      - proxy
+
+networks:
+  proxy:
+    external: true
