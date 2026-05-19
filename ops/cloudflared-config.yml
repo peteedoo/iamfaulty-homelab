@@ -1,0 +1,26 @@
+tunnel: 3727ea81-b7a2-484c-8de9-3e55ab1a050c
+credentials-file: /Users/peteedoo/.cloudflared/3727ea81-b7a2-484c-8de9-3e55ab1a050c.json
+protocol: http2
+
+ingress:
+  - hostname: home.iamfaulty.com
+    service: http://localhost:3004
+    originRequest:
+      noTLSVerify: true
+  - hostname: iamfaulty.com
+    service: http://localhost:80
+  - hostname: www.iamfaulty.com
+    service: http://localhost:80
+  - hostname: gitea.iamfaulty.com
+    service: http://localhost:80
+  - hostname: jellyfin.iamfaulty.com
+    service: http://localhost:8096
+  - hostname: request.iamfaulty.com
+    service: http://localhost:80
+  - hostname: openclaw.iamfaulty.com
+    service: http://localhost:80
+  - hostname: plex.iamfaulty.com
+    service: http://localhost:32400
+  - hostname: overseerr.iamfaulty.com
+    service: http://localhost:5055
+  - service: http_status:404
