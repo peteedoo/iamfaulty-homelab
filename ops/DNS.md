@@ -57,7 +57,11 @@ curl -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records" \
 - Domain: `newservice.iamfaulty.com`
 - Forward: `host.docker.internal` : `<port>`
 - Websockets: on if needed
-- SSL: save without SSL first, then edit and add Let's Encrypt cert
+- SSL: request Let's Encrypt cert — do **not** enable Force SSL
+- Advanced: do **not** enable Trust Upstream Forwarded Proto Headers (cloudflared doesn't pass it)
+
+> Cloudflare terminates SSL. NPM always receives HTTP from the tunnel. Force SSL causes
+> an infinite redirect loop — Cloudflare sends HTTP, NPM redirects to HTTPS, repeat.
 
 ---
 
