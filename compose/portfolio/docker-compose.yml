@@ -1,9 +1,0 @@
-services:
-  portfolio:
-    image: nginx:alpine
-    container_name: portfolio
-    platform: linux/arm64
-    restart: unless-stopped
-    ports: ["127.0.0.1:3001:80"]
-    volumes:
-      - ./html:/usr/share/nginx/html:ro
