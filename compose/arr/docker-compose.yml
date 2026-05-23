@@ -4,15 +4,18 @@ services:
     container_name: qbittorrent
     platform: linux/arm64
     restart: unless-stopped
-    network_mode: host
     environment:
       - PUID=501
       - PGID=20
       - TZ=America/Chicago
       - WEBUI_PORT=8080
+    ports:
+      - "127.0.0.1:8080:8080"
     volumes:
       - /Users/peteedoo/homelab-data/arr/qbittorrent:/config
       - /Volumes/homelab/media:/data
+    networks:
+      - default
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
@@ -93,7 +96,7 @@ services:
         soft: 65536
         hard: 65536
     environment:
-      - PUID=1000
+      - PUID=501
       - PGID=20
       - TZ=America/Chicago
     ports:
