@@ -58,6 +58,10 @@ services:
     container_name: radarr
     platform: linux/arm64
     restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     environment:
       - PUID=501
       - PGID=20
