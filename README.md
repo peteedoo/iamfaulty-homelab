@@ -55,25 +55,47 @@ Self-hosted media and automation stack running on a Mac mini M4 via OrbStack. Al
 | daily-brief | Custom morning briefing script |
 | dashboard | Custom stack status page |
 
+## True Architecture (4 Sources)
+
+The live stack is **not** in this repo. It is assembled from 4 independent sources:
+
+| Source | Location | What it runs | Notes |
+|--------|----------|--------------|-------|
+| 1. Arr Stack | `~/homelab-data/arr-stack/docker-compose.yml` | qBit, Gluetun, Radarr, Sonarr, Lidarr, Mylar3, Prowlarr, Readarr, Flaresolverr, Bookbounty, Huntorr, Soularr | Local SSD. Recently added: `ulimits.nofile: 65536` for Radarr |
+| 2. Apps / Infra | `/Volumes/homelab/compose/` (NAS Gitea repo) | Jellyfin, NPM, Portainer, Gitea, Planka, Homepage, Beszel, Duplicati, Watchtower, daily-brief, Dozzle, dashboard, board, portfolio, AnythingLLM | **Source of truth** for app compose files |
+| 3. Agent Stack | `~/homelab-agent-stack/docker-compose.yml` | Caddy (reverse proxy), sync-server | Proxies to `host.docker.internal` for host services |
+| 4. Truth Site | `~/homelab-data/truth-site/docker-compose.yml` | Static site container | Independent |
+
+> ⚠️ **The `compose/` directory in this GitHub repo is stale.** It was an early backup but is missing services (flaresolverr, readarr, bookbounty, huntorr) and has wrong configs. Do not use it to bring up stacks. The NAS repo (`/Volumes/homelab/compose/`) is the actual source of truth.
+
 ## Layout
 
 ```
-/Volumes/homelab/compose/    # NAS — compose files (source of truth)
-~/homelab-data/              # Mini local SSD — container config/data volumes
-/Volumes/homelab/media/      # NAS — media library (Jellyfin)
+/Volumes/homelab/compose/         # NAS — compose files (source of truth)
+~/homelab-data/                   # Mini local SSD — container config/data volumes
+~/homelab-data/arr-stack/         # Arr stack compose + configs
+~/homelab-agent-stack/            # Caddy + sync-server
+~/homelab-data/truth-site/        # Truth site compose
+/Volumes/homelab/media/           # NAS — media library (Jellyfin)
 ```
 
 ## Bringing the stack up
 
 ```bash
-# Arr stack (media acquisition)
-docker compose -f /Volumes/homelab/compose/arr/docker-compose.yml up -d
+# 1. Arr stack (media acquisition)
+docker compose -f ~/homelab-data/arr-stack/docker-compose.yml up -d
 
-# Everything else
+# 2. Apps / Infra (NAS must be mounted)
 for stack in jellyfin npm portainer gitea portfolio watchtower duplicati \
              homepage dozzle daily-brief beszel anythingllm board dashboard; do
   docker compose -f /Volumes/homelab/compose/$stack/docker-compose.yml up -d
 done
+
+# 3. Agent stack (Caddy + sync-server)
+docker compose -f ~/homelab-agent-stack/docker-compose.yml up -d
+
+# 4. Truth site
+docker compose -f ~/homelab-data/truth-site/docker-compose.yml up -d
 ```
 
 > The NAS must be mounted before starting any stack. OrbStack handles the Docker runtime on macOS.
@@ -88,3 +110,4 @@ done
 - **API Reference:** See [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md) for every service endpoint, auth method, and where to find credentials.
 - VPN kill switch (Gluetun) is required for qBittorrent. If the tunnel is down, downloads stop — by design.
 - Jellyfin media path is `/Volumes/homelab/media` mounted read-only inside the container.
+- **Caddy** in `homelab-agent-stack/` proxies internal services to `*.iamfaulty.com`. It binds `127.0.0.1:80/443` to avoid conflicting with Nginx Proxy Manager (`0.0.0.0:80/443`).

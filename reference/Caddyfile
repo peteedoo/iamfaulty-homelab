@@ -1,0 +1,153 @@
+# Caddy reverse proxy for iamfaulty.com stack
+# Local-only HTTP — upgrade to HTTPS later with Cloudflare or ACME
+
+:80 {
+	@jellyfin host jellyfin.iamfaulty.com
+	handle @jellyfin {
+		reverse_proxy host.docker.internal:8096
+	}
+
+	@qbit host qbit.iamfaulty.com
+	handle @qbit {
+		reverse_proxy host.docker.internal:8080
+	}
+
+	@sonarr host sonarr.iamfaulty.com
+	handle @sonarr {
+		reverse_proxy host.docker.internal:8989
+	}
+
+	@radarr host radarr.iamfaulty.com
+	handle @radarr {
+		reverse_proxy host.docker.internal:7878
+	}
+
+	@lidarr host lidarr.iamfaulty.com
+	handle @lidarr {
+		reverse_proxy host.docker.internal:8686
+	}
+
+	@prowlarr host prowlarr.iamfaulty.com
+	handle @prowlarr {
+		reverse_proxy host.docker.internal:9696
+	}
+
+	@jellyseerr host jellyseerr.iamfaulty.com
+	handle @jellyseerr {
+		reverse_proxy host.docker.internal:5055
+	}
+
+	# @bazarr host bazarr.iamfaulty.com
+	# handle @bazarr {
+	# 	reverse_proxy host.docker.internal:6767
+	# }
+
+	@mylar host mylar.iamfaulty.com
+	handle @mylar {
+		reverse_proxy host.docker.internal:8090
+	}
+
+	@readarr host readarr.iamfaulty.com
+	handle @readarr {
+		reverse_proxy host.docker.internal:8787
+	}
+
+	@bookbounty host bookbounty.iamfaulty.com
+	handle @bookbounty {
+		reverse_proxy host.docker.internal:5000
+	}
+
+	@huntorr host huntorr.iamfaulty.com
+	handle @huntorr {
+		reverse_proxy host.docker.internal:5002
+	}
+
+	# @us host us.iamfaulty.com
+	# handle @us {
+	# 	reverse_proxy host.docker.internal:3009
+	# }
+
+	@metube host metube.iamfaulty.com
+	handle @metube {
+		reverse_proxy host.docker.internal:8081
+	}
+
+	@slskd host slskd.iamfaulty.com
+	handle @slskd {
+		reverse_proxy host.docker.internal:5030
+	}
+
+	@portainer host portainer.iamfaulty.com
+	handle @portainer {
+		reverse_proxy host.docker.internal:9000
+	}
+
+	@homepage host homepage.iamfaulty.com
+	handle @homepage {
+		reverse_proxy host.docker.internal:3005
+	}
+
+	@planka host planka.iamfaulty.com
+	handle @planka {
+		reverse_proxy host.docker.internal:3333
+	}
+
+	# @agents host agents.iamfaulty.com
+	# handle @agents {
+	# 	reverse_proxy host.docker.internal:8091
+	# }
+
+	@status host status.iamfaulty.com
+	handle @status {
+		reverse_proxy host.docker.internal:3004
+	}
+
+	@links host links.iamfaulty.com
+	handle @links {
+		reverse_proxy host.docker.internal:3334
+	}
+
+	# @board host board.iamfaulty.com
+	# handle @board {
+	# 	reverse_proxy host.docker.internal:3335
+	# }
+
+	# @mounts host mounts.iamfaulty.com
+	# handle @mounts {
+	# 	reverse_proxy host.docker.internal:3335
+	# }
+
+	@beszel host beszel.iamfaulty.com
+	handle @beszel {
+		reverse_proxy host.docker.internal:8089
+	}
+
+	@git host git.iamfaulty.com
+	handle @git {
+		reverse_proxy host.docker.internal:3000
+	}
+
+	@sync host sync.iamfaulty.com
+	handle @sync {
+		reverse_proxy sync-server:3001
+	}
+
+	@truth host truth.iamfaulty.com
+	handle @truth {
+		reverse_proxy host.docker.internal:3008
+	}
+
+	@root host iamfaulty.com
+	handle @root {
+		reverse_proxy host.docker.internal:18800
+	}
+
+	@openclaw host openclaw.iamfaulty.com
+	handle @openclaw {
+		reverse_proxy host.docker.internal:18800
+	}
+
+	handle {
+		reverse_proxy host.docker.internal:18800
+	}
+}

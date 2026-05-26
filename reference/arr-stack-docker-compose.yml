@@ -1,0 +1,333 @@
+services:
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    platform: linux/arm64
+    restart: unless-stopped
+    environment:
+      - PUID=501
+      - PGID=20
+      - TZ=America/Chicago
+      - WEBUI_PORT=8080
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - /Users/peteedoo/homelab-data/arr/qbittorrent:/config
+      - /Volumes/homelab/media:/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - default
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    platform: linux/arm64
+    restart: unless-stopped
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+    environment:
+      - PUID=501
+      - PGID=20
+      - TZ=America/Chicago
+    ports:
+      - "127.0.0.1:9696:9696"
+    volumes:
+      - /Users/peteedoo/homelab-data/arr/prowlarr:/config
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9696/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - default
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    platform: linux/arm64
+    restart: unless-stopped
+    environment:
+      - PUID=501
+      - PGID=20
+      - TZ=America/Chicago
+    ports:
+      - "127.0.0.1:8989:8989"
+    volumes:
+      - /Users/peteedoo/homelab-data/arr/sonarr:/config
+      - /Volumes/homelab/media:/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8989/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - default
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    platform: linux/arm64
+    restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    environment:
+      - PUID=501
+      - PGID=20
+      - TZ=America/Chicago
+    ports:
+      - "127.0.0.1:7878:7878"
+    volumes:
+      - /Users/peteedoo/homelab-data/arr/radarr:/config
+      - /Volumes/homelab/media:/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:7878/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - default
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    platform: linux/arm64
+    restart: unless-stopped
+    environment:
+      - TZ=America/Chicago
+      - LOG_LEVEL=info
+    ports:
+      - "127.0.0.1:5055:5055"
+    volumes:
+      - /Users/peteedoo/homelab-data/arr/jellyseerr:/app/config
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5055/api/v1/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - default
+      - proxy
+
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    platform: linux/arm64
+    restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    environment:
+      - PUID=501
+      - PGID=20
+      - TZ=America/Chicago
+    ports:
+      - "127.0.0.1:8686:8686"
+    volumes:
+      - /Users/peteedoo/homelab-data/arr/lidarr:/config
+      - /Volumes/homelab/media:/data:delegated
+      - /Volumes/homelab/media/downloads/soulseek:/slskd_downloads:delegated
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8686/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - default
+
+  mylar3:
+    image: lscr.io/linuxserver/mylar3:latest
+    container_name: mylar3
+    platform: linux/arm64
+    restart: unless-stopped
+    environment:
+      - PUID=501
+      - PGID=20
+      - TZ=America/Chicago
+    ports:
+      - "127.0.0.1:8090:8090"
+    volumes:
+      - /Users/peteedoo/homelab-data/arr/mylar3:/config
+      - /Volumes/homelab/media:/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8090"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - default
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    platform: linux/arm64
+    restart: unless-stopped
+    environment:
+      - LOG_LEVEL=info
+      - TZ=America/Chicago
+    ports:
+      - "127.0.0.1:8191:8191"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8191"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - default
+
+  readarr:
+    image: lscr.io/linuxserver/readarr:0.4.0-develop
+    container_name: readarr
+    platform: linux/arm64
+    restart: unless-stopped
+    environment:
+      - PUID=501
+      - PGID=20
+      - TZ=America/Chicago
+    ports:
+      - "127.0.0.1:8787:8787"
+    volumes:
+      - /Users/peteedoo/homelab-data/arr/readarr:/config
+      - /Volumes/homelab/media:/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8787/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - default
+
+  bookbounty:
+    image: thewicklowwolf/bookbounty:latest
+    container_name: bookbounty
+    platform: linux/arm64
+    restart: unless-stopped
+    environment:
+      - PUID=501
+      - PGID=20
+      - TZ=America/Chicago
+      - readarr_address=http://readarr:8787
+      - selected_path_type=folder
+      - library_scan_on_completion=True
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - /Users/peteedoo/homelab-data/arr/bookbounty:/bookbounty/config
+      - /Volumes/homelab/media:/bookbounty/downloads
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - default
+
+  huntorr:
+    image: thewicklowwolf/huntorr:latest
+    container_name: huntorr
+    platform: linux/arm64
+    restart: unless-stopped
+    environment:
+      - TZ=America/Chicago
+      - torrenter_ip=qbittorrent
+      - torrenter_port=8080
+      - media_server_addresses=Jellyfin:http://host.docker.internal:8096
+    ports:
+      - "127.0.0.1:5002:5000"
+    volumes:
+      - /Users/peteedoo/homelab-data/arr/huntorr:/huntorr/config
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5002"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - default
+
+  slskd:
+    image: slskd/slskd:latest
+    container_name: slskd
+    platform: linux/arm64
+    restart: unless-stopped
+    network_mode: host
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5030/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    environment:
+      - SLSKD_SLSK_USERNAME=${SLSK_USER}
+      - SLSKD_SLSK_PASSWORD=${SLSK_PASS}
+      - SLSKD_REMOTE_CONFIGURATION=true
+      - SLSKD_DOWNLOADS_DIR=/downloads/complete
+      - SLSKD_INCOMPLETE_DIR=/downloads/incomplete
+      - SLSKD_SHARED_DIR=/music
+      - TZ=America/Chicago
+    volumes:
+      - /Users/peteedoo/homelab-data/arr/slskd:/app
+      - slskd-downloads:/downloads
+      - slskd-music:/music
+
+  soularr:
+    image: mrusse08/soularr:latest
+    container_name: soularr
+    platform: linux/arm64
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - TZ=America/Chicago
+    volumes:
+      - /Users/peteedoo/homelab-data/arr/soularr:/data
+      - /Volumes/homelab/media/downloads/soulseek:/downloads
+
+  metube:
+    image: ghcr.io/alexta69/metube:latest
+    container_name: metube
+    platform: linux/arm64
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8081"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    environment:
+      - TZ=America/Chicago
+    ports:
+      - "127.0.0.1:8081:8081"
+    volumes:
+      - /Volumes/homelab/media/youtube:/downloads
+    networks:
+      - default
+
+networks:
+  proxy:
+    external: true
+
+volumes:
+  slskd-downloads:
+    external: true
+  slskd-music:
+    external: true
