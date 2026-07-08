@@ -9,7 +9,8 @@
 
 - **Full VMs are not the right path here.** There is no hypervisor (no Proxmox/ESXi), and the primary host (Mac mini M4) is **Apple Silicon / ARM64**, so it can't run x86 Linux VMs natively.
 - **Containers are the right path.** Run a **browser-accessible Linux desktop** as a Docker container (`linuxserver/webtop`, which has ARM64 images). Each "terminal" becomes anything with a browser — no client software to install.
-- **Recommended host: the UGREEN NAS** *if* its model supports Docker (UGOS Pro). Fallback: the Mac mini after disk cleanup. See [Host decision](#host-decision).
+- **Recommended host: the Mac mini** (after a small disk cleanup). The NAS is a **UGREEN DH2300**, which is unsuitable — ARM, only 4 GB sealed RAM, and no official Docker. See [Host decision](#host-decision).
+- **Desktop flavor: XFCE** (light) — confirmed.
 - **Access: both** — private over Tailscale by default, plus an optional public subdomain (`desktop.iamfaulty.com`) fronted by auth, using the existing Cloudflare Tunnel + NPM plumbing.
 
 ---
@@ -29,27 +30,27 @@ A browser-based desktop container gives ~90% of what people actually want from "
 
 ## Host decision
 
-> This is the one thing to confirm before building. It comes down to **which UGREEN model** you have.
+**Resolved: host on the Mac mini.** The NAS was identified as a **UGREEN DH2300**, which rules it out.
 
-**The repo documents the NAS only as "UGREEN NAS (`ILLMATIC`, `192.168.68.69`)" — the exact model isn't recorded.** UGOS Pro ships a Docker app on the DXP-series NASes; the Plus/Pro tiers additionally support full VMs. So:
+**Why not the NAS (UGREEN DH2300):**
 
-```
-Does the UGREEN model support the UGOS "Docker" app?
-├─ YES  → HOST ON THE NAS  (recommended)
-│         • Keeps graphical load off the mini's 93%-full SSD
-│         • NAS has the storage headroom for desktop images + user data
-│         • Desktops live next to the media/persistent share
-└─ NO / unsure
-          → HOST ON THE MAC MINI (fallback)
-            • OrbStack is already running; fits the existing stack
-            • BUT free disk first (see cleanup below) — desktop images are 2–5 GB
-```
+| DH2300 attribute | Consequence for hosting desktops |
+|------------------|----------------------------------|
+| Rockchip RK3576, **8-core ARM** | ARM64 (fine for image choice) but low-power |
+| **4 GB RAM, sealed / non-expandable** | Hard ceiling — UGOS + a desktop + an in-desktop browser can't share 4 GB comfortably |
+| **No official Docker** (DH-series runs an ARM fork of UGOS with a limited app center) | Docker only via an unofficial hack (installing the DH4300 Plus client) — unsupported and fragile |
 
-**Recommendation: prefer the NAS.** It has the storage and keeps desktops off the disk-pressured mini. Only fall back to the mini if the UGREEN model can't run Docker.
+The DH2300 is a good storage/personal-cloud box, but it is not built to run containerized graphical desktops.
 
-**To confirm the model:** UGOS → Control Panel → Info Center (or the sticker on the unit). Look for `DXP2800 / DXP4800 / DXP4800 Plus / DXP6800 Pro / DXP8800 Plus`, then check that the **Docker** app is installable. If you tell me the model, I'll finalize the host.
+**Why the Mac mini works:**
+- Docker (OrbStack) is already running and fully supported.
+- Real RAM headroom for multiple desktop containers.
+- Fits the existing stack pattern exactly.
+- Only caveat: SSD is at **93%** — free space first (below).
 
-**If falling back to the mini, free space first** (from the audit — reclaims ~20 GB+):
+> Note: every machine in the lab is ARM64 (mini = Apple Silicon, DH2300 = Rockchip, Pis). So the desktop image must be ARM64 (webtop is), and full x86 VMs are not possible anywhere here — containers are the path.
+
+**Before deploying on the mini, free space first** (from the audit — reclaims ~20 GB+):
 ```bash
 docker image prune -a              # ~6.8 GB (47 images, orphans like us-app)
 # clean ~/Downloads (7.9 GB), compact OrbStack VM disk via OrbStack settings
@@ -173,11 +174,13 @@ services:
 
 ---
 
-## Open decisions before I build
+## Decisions
 
-1. **UGREEN model?** → confirms NAS vs mini as host.
-2. **Desktop flavor?** XFCE (light, recommended) vs KDE (heavier, prettier).
-3. **How many terminals** to provision initially (1 to prove it, then clone).
-4. **Public auth choice** if we expose it (NPM access list vs webtop password vs Cloudflare Access).
+**Resolved:**
+- **Host:** Mac mini (NAS DH2300 ruled out — see above).
+- **Desktop flavor:** XFCE (`lscr.io/linuxserver/webtop:ubuntu-xfce`).
 
-Answer #1 and #2 and I can move from plan to build.
+**Still open:**
+1. **How many terminals** to provision initially (recommend 1 to prove it, then clone).
+2. **Public auth choice** if we expose it (NPM access list vs webtop password vs Cloudflare Access).
+3. **Go-ahead to build:** the compose block above is ready. Deploying it requires running on the mini itself (freeing disk + `docker compose up`), which is on your hardware — say the word and I'll finalize the compose file + DNS runbook in the repo for you to apply.
