@@ -11,7 +11,7 @@
   justify-content: space-between;
   padding: 6px 12px;
   background: var(--bg-panel);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-subtle);
   font-family: var(--font-mono);
   font-size: 12px;
 }
@@ -25,9 +25,10 @@
   border: 1px solid var(--border);
   border-radius: 4px;
   background: var(--bg-elevated);
-  color: var(--text);
+  color: var(--text-secondary);
   font-size: 11px;
   cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
 }
 
 .save-btn:hover {
@@ -51,8 +52,9 @@
 .editor-empty-inner h2 {
   font-size: 28px;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--text);
   margin-bottom: 12px;
+  letter-spacing: -0.03em;
 }
 
 .editor-empty-inner p {
@@ -63,6 +65,7 @@
 
 .editor-empty-inner .hint {
   font-size: 13px;
-  font-style: italic;
-  opacity: 0.7;
+  color: var(--accent-dim);
+  font-style: normal;
+  opacity: 1;
 }

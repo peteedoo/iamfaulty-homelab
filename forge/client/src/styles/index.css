@@ -1,17 +1,20 @@
 :root {
-  --bg-deep: #0d0f12;
-  --bg-panel: #14171c;
-  --bg-elevated: #1a1e26;
-  --bg-hover: #222833;
-  --border: #2a3140;
-  --text: #e8ecf4;
-  --text-muted: #8b95a8;
-  --accent: #6ee7b7;
-  --accent-dim: #34d399;
-  --danger: #f87171;
-  --warning: #fbbf24;
-  --user-bubble: #1e3a5f;
-  --tool-bg: #1a2332;
+  --bg-deep: #111111;
+  --bg-panel: #181818;
+  --bg-elevated: #222222;
+  --bg-hover: #2a2a2a;
+  --border: #333333;
+  --border-subtle: #2a2a2a;
+  --text: #ececec;
+  --text-secondary: #c8c8c8;
+  --text-muted: #9a9a9a;
+  --accent: #e8a87c;
+  --accent-dim: #c9875e;
+  --accent-soft: rgba(232, 168, 124, 0.12);
+  --danger: #e06c75;
+  --warning: #e5c07b;
+  --user-bubble: #2a2420;
+  --tool-bg: #1c1c1c;
   --font-sans: "IBM Plex Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", "Fira Code", monospace;
 }
@@ -58,5 +61,5 @@ textarea {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: #444444;
 }

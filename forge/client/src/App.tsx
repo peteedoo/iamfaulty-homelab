@@ -42,7 +42,7 @@ export default function App() {
     <div className="app">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <span className="logo">⚒ Forge</span>
+          <span className="logo"><span>Forge</span></span>
         </div>
         <FileTree
           tree={workspace.tree}
