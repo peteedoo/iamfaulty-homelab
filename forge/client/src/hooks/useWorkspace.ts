@@ -43,6 +43,12 @@ export function useWorkspace() {
     [activeFile]
   );
 
+  const closeFile = useCallback(() => {
+    setActiveFile(null);
+    setFileContent("");
+    setLanguage("plaintext");
+  }, []);
+
   useEffect(() => {
     refreshTree();
   }, [refreshTree]);
@@ -54,6 +60,7 @@ export function useWorkspace() {
     language,
     loading,
     openFile,
+    closeFile,
     saveFile,
     setFileContent,
     refreshTree,

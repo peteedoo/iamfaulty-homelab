@@ -1,7 +1,16 @@
 .app {
   display: grid;
-  grid-template-columns: 220px 1fr 380px;
   height: 100vh;
+}
+
+/* Chat-first: no file open — agent gets the space */
+.app.chat-focus {
+  grid-template-columns: 220px 1fr;
+}
+
+/* File open — show editor between tree and chat */
+.app.editor-open {
+  grid-template-columns: 220px 1fr 380px;
 }
 
 .sidebar {
@@ -30,14 +39,20 @@
 
 .main {
   overflow: hidden;
+  min-width: 0;
 }
 
 .chat-sidebar {
   overflow: hidden;
+  min-width: 0;
 }
 
 @media (max-width: 900px) {
-  .app {
+  .app.chat-focus {
+    grid-template-columns: 180px 1fr;
+  }
+
+  .app.editor-open {
     grid-template-columns: 180px 1fr 320px;
   }
 }

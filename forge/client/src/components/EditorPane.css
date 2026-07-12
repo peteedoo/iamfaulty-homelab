@@ -16,6 +16,12 @@
   font-size: 12px;
 }
 
+.editor-tab-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .tab-path {
   color: var(--text-muted);
 }

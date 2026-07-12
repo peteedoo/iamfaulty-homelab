@@ -16,8 +16,12 @@ export default function App() {
     provider,
     model,
     apiKey,
-    onFileChange: () => {
+    onFileChange: ({ tool, path } = {}) => {
       workspace.refreshTree();
+      if (tool === "write_file" && path) {
+        workspace.openFile(path);
+        return;
+      }
       if (workspace.activeFile) workspace.openFile(workspace.activeFile);
     },
   });
@@ -38,8 +42,10 @@ export default function App() {
     if (info) setModel(info.defaultModel);
   };
 
+  const hasEditor = Boolean(workspace.activeFile);
+
   return (
-    <div className="app">
+    <div className={`app ${hasEditor ? "editor-open" : "chat-focus"}`}>
       <aside className="sidebar">
         <div className="sidebar-header">
           <span className="logo"><span>Forge</span></span>
@@ -51,15 +57,18 @@ export default function App() {
         />
       </aside>
 
-      <main className="main">
-        <EditorPane
-          path={workspace.activeFile}
-          content={workspace.fileContent}
-          language={workspace.language}
-          onChange={workspace.setFileContent}
-          onSave={() => workspace.saveFile(workspace.fileContent)}
-        />
-      </main>
+      {hasEditor && (
+        <main className="main">
+          <EditorPane
+            path={workspace.activeFile}
+            content={workspace.fileContent}
+            language={workspace.language}
+            onChange={workspace.setFileContent}
+            onSave={() => workspace.saveFile(workspace.fileContent)}
+            onClose={() => workspace.closeFile()}
+          />
+        </main>
+      )}
 
       <aside className="chat-sidebar">
         <ChatPanel

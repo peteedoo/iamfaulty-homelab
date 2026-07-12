@@ -111,11 +111,13 @@ export function useChat({ provider, model, apiKey, onFileChange }: UseChatOption
                       result: event.result,
                       isError: event.isError,
                     });
-                    if (
-                      event.tool?.name === "write_file" ||
-                      event.tool?.name === "run_command"
-                    ) {
-                      onFileChange?.();
+                    const toolName = event.tool?.name;
+                    const filePath =
+                      typeof event.tool?.input?.path === "string"
+                        ? event.tool.input.path
+                        : undefined;
+                    if (toolName === "write_file" || toolName === "run_command") {
+                      onFileChange?.({ tool: toolName, path: filePath });
                     }
                   }
 
