@@ -23,14 +23,12 @@
 
 .tree-item:hover {
   background: var(--bg-hover);
-  color: var(--foam);
+  color: var(--text);
 }
 
 .tree-item.active {
   background: var(--accent-soft);
-  color: var(--foam);
-  border-left: 2px solid var(--pine);
-  padding-left: 6px;
+  color: var(--accent);
 }
 
 .tree-icon {

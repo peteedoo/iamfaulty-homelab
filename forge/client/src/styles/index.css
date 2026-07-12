@@ -1,32 +1,4 @@
 :root {
-  /* rosé pine moon — muted but alive */
-  --bg-deep: #1e1e2e;
-  --bg-panel: #232136;
-  --bg-elevated: #2a273f;
-  --bg-hover: #393552;
-  --border: #44415a;
-  --border-subtle: #32304a;
-
-  --text: #e0def4;
-  --text-secondary: #c4a7e7;
-  --text-muted: #908caa;
-
-  --rose: #ebbcba;
-  --foam: #9ccfd8;
-  --gold: #f6c177;
-  --pine: #3e8fb0;
-  --love: #eb6f92;
-  --iris: #c4a7e7;
-
-  --accent: var(--foam);
-  --accent-2: var(--iris);
-  --accent-warm: var(--gold);
-  --accent-soft: rgba(156, 207, 216, 0.1);
-  --danger: var(--love);
-  --warning: var(--gold);
-  --user-bubble: rgba(235, 188, 186, 0.08);
-  --tool-bg: rgba(62, 143, 176, 0.08);
-
   --font-sans: "IBM Plex Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", "Fira Code", monospace;
 }
@@ -73,5 +45,5 @@ textarea {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--pine);
+  background: var(--text-muted);
 }

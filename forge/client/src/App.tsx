@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import { ChatPanel } from "./components/ChatPanel";
 import { EditorPane } from "./components/EditorPane";
 import { FileTree } from "./components/FileTree";
+import { ThemePicker } from "./components/ThemePicker";
 import { useChat } from "./hooks/useChat";
+import { useTheme } from "./hooks/useTheme";
 import { useWorkspace } from "./hooks/useWorkspace";
 import "./App.css";
 
 export default function App() {
   const workspace = useWorkspace();
+  const { theme, setTheme } = useTheme();
   const [provider, setProvider] = useState("ollama");
   const [model, setModel] = useState("qwen2.5-coder:7b");
   const [apiKey, setApiKey] = useState("");
@@ -49,6 +52,7 @@ export default function App() {
       <aside className="sidebar">
         <div className="sidebar-header">
           <span className="logo"><span>Forge</span></span>
+          <ThemePicker theme={theme} onChange={setTheme} />
         </div>
         <FileTree
           tree={workspace.tree}
@@ -63,6 +67,7 @@ export default function App() {
             path={workspace.activeFile}
             content={workspace.fileContent}
             language={workspace.language}
+            theme={theme}
             onChange={workspace.setFileContent}
             onSave={() => workspace.saveFile(workspace.fileContent)}
             onClose={() => workspace.closeFile()}

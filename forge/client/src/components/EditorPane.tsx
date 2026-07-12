@@ -1,17 +1,19 @@
 import Editor from "@monaco-editor/react";
-import { defineForgeTheme } from "./monaco-theme";
+import { defineForgeThemes, monacoThemeFor } from "./monaco-theme";
+import type { ThemeId } from "../themes";
 import "./EditorPane.css";
 
 interface Props {
   path: string | null;
   content: string;
   language: string;
+  theme: ThemeId;
   onChange: (value: string) => void;
   onSave: () => void;
   onClose: () => void;
 }
 
-export function EditorPane({ path, content, language, onChange, onSave, onClose }: Props) {
+export function EditorPane({ path, content, language, theme, onChange, onSave, onClose }: Props) {
   if (!path) return null;
 
   return (
@@ -31,8 +33,8 @@ export function EditorPane({ path, content, language, onChange, onSave, onClose 
         height="100%"
         language={language}
         value={content}
-        theme="forge-dark"
-        beforeMount={defineForgeTheme}
+        theme={monacoThemeFor(theme)}
+        beforeMount={defineForgeThemes}
         onChange={(v) => onChange(v ?? "")}
         options={{
           fontFamily: "IBM Plex Mono, monospace",
