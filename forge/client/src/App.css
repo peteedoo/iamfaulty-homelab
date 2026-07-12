@@ -1,0 +1,38 @@
+.app {
+  display: grid;
+  grid-template-columns: 220px 1fr 380px;
+  height: 100vh;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--accent);
+}
+
+.main {
+  overflow: hidden;
+}
+
+.chat-sidebar {
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .app {
+    grid-template-columns: 180px 1fr 320px;
+  }
+}
