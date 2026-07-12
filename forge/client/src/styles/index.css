@@ -1,38 +1,31 @@
 :root {
-  /* deep violet base */
-  --bg-deep: #0a0612;
-  --bg-panel: #120c1e;
-  --bg-elevated: #1a1230;
-  --bg-hover: #261a42;
-  --border: #3d2d66;
-  --border-subtle: #2a1f45;
+  /* rosé pine moon — muted but alive */
+  --bg-deep: #1e1e2e;
+  --bg-panel: #232136;
+  --bg-elevated: #2a273f;
+  --bg-hover: #393552;
+  --border: #44415a;
+  --border-subtle: #32304a;
 
-  --text: #f4eeff;
-  --text-secondary: #d4c4f0;
-  --text-muted: #9b87c4;
+  --text: #e0def4;
+  --text-secondary: #c4a7e7;
+  --text-muted: #908caa;
 
-  /* electric accents */
-  --pink: #ff3cac;
-  --violet: #b967ff;
-  --cyan: #00f5d4;
-  --gold: #ffe566;
-  --coral: #ff6b6b;
+  --rose: #ebbcba;
+  --foam: #9ccfd8;
+  --gold: #f6c177;
+  --pine: #3e8fb0;
+  --love: #eb6f92;
+  --iris: #c4a7e7;
 
-  --accent: var(--pink);
-  --accent-2: var(--violet);
-  --accent-3: var(--cyan);
-  --accent-soft: rgba(255, 60, 172, 0.14);
-  --accent-glow: rgba(185, 103, 255, 0.35);
-
-  --danger: #ff6b8a;
+  --accent: var(--foam);
+  --accent-2: var(--iris);
+  --accent-warm: var(--gold);
+  --accent-soft: rgba(156, 207, 216, 0.1);
+  --danger: var(--love);
   --warning: var(--gold);
-  --user-bubble: rgba(185, 103, 255, 0.12);
-  --tool-bg: rgba(0, 245, 212, 0.05);
-
-  --gradient-brand: linear-gradient(135deg, var(--pink) 0%, var(--violet) 50%, var(--cyan) 100%);
-  --gradient-btn: linear-gradient(135deg, #ff3cac, #b967ff);
-  --gradient-surface: radial-gradient(ellipse 120% 80% at 10% -20%, rgba(185, 103, 255, 0.18), transparent 50%),
-    radial-gradient(ellipse 80% 60% at 90% 110%, rgba(0, 245, 212, 0.1), transparent 45%);
+  --user-bubble: rgba(235, 188, 186, 0.08);
+  --tool-bg: rgba(62, 143, 176, 0.08);
 
   --font-sans: "IBM Plex Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", "Fira Code", monospace;
@@ -54,7 +47,6 @@ body,
 body {
   font-family: var(--font-sans);
   background: var(--bg-deep);
-  background-image: var(--gradient-surface);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
 }
@@ -81,5 +73,5 @@ textarea {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--violet);
+  background: var(--pine);
 }

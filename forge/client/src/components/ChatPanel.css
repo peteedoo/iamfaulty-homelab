@@ -17,7 +17,7 @@
 .chat-title {
   font-weight: 600;
   font-size: 13px;
-  color: var(--text-secondary);
+  color: var(--iris);
 }
 
 .chat-controls {
@@ -32,7 +32,7 @@
   border: 1px solid var(--border);
   border-radius: 4px;
   background: var(--bg-elevated);
-  color: var(--text-secondary);
+  color: var(--text);
   font-size: 11px;
   max-width: 120px;
 }
@@ -40,7 +40,7 @@
 .provider-select:focus,
 .model-select:focus {
   outline: none;
-  border-color: var(--accent-dim);
+  border-color: var(--pine);
 }
 
 .icon-btn {
@@ -53,7 +53,7 @@
 }
 
 .icon-btn:hover {
-  color: var(--text);
+  color: var(--love);
 }
 
 .api-key-row {
@@ -74,7 +74,7 @@
 
 .api-key-input:focus {
   outline: none;
-  border-color: var(--accent-dim);
+  border-color: var(--pine);
 }
 
 .chat-messages {
@@ -111,9 +111,8 @@
 }
 
 .suggestion:hover {
-  border-color: var(--accent-dim);
+  border-color: var(--pine);
   color: var(--text);
-  background: var(--bg-hover);
 }
 
 .message {
@@ -133,33 +132,37 @@
 }
 
 .message.user .message-role {
-  color: var(--accent);
+  color: var(--rose);
+}
+
+.message.assistant .message-role {
+  color: var(--foam);
 }
 
 .message.user .message-body p {
   background: var(--user-bubble);
   padding: 8px 10px;
   border-radius: 8px;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid rgba(235, 188, 186, 0.15);
 }
 
 .streaming-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--foam);
   animation: pulse 1s infinite;
 }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+  50% { opacity: 0.35; }
 }
 
 .message-body {
   font-size: 13px;
   line-height: 1.6;
-  color: var(--text-secondary);
+  color: var(--text);
 }
 
 .message-body p {
@@ -179,26 +182,31 @@
 .message-body code {
   font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--accent);
+  color: var(--gold);
 }
 
 .tool-card {
   margin-top: 8px;
   padding: 8px;
   background: var(--tool-bg);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(62, 143, 176, 0.25);
   border-radius: 6px;
   font-family: var(--font-mono);
   font-size: 11px;
 }
 
 .tool-card.error {
-  border-color: var(--danger);
+  border-color: rgba(235, 111, 146, 0.35);
+  background: rgba(235, 111, 146, 0.06);
 }
 
 .tool-label {
-  color: var(--text-secondary);
+  color: var(--pine);
   font-weight: 500;
+}
+
+.tool-card.error .tool-label {
+  color: var(--love);
 }
 
 .tool-output {
@@ -231,20 +239,20 @@
 }
 
 .chat-input textarea:focus {
-  border-color: var(--accent-dim);
+  border-color: var(--pine);
 }
 
 .send-btn {
   align-self: flex-end;
   padding: 6px 16px;
-  border: 1px solid var(--accent-dim);
+  border: none;
   border-radius: 6px;
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--pine);
+  color: var(--bg-deep);
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: filter 0.15s;
 }
 
 .send-btn:disabled {
@@ -253,12 +261,10 @@
 }
 
 .send-btn.stop {
-  background: rgba(224, 108, 117, 0.15);
-  border-color: var(--danger);
-  color: var(--danger);
+  background: var(--love);
+  color: var(--text);
 }
 
 .send-btn:hover:not(:disabled) {
-  background: var(--accent-dim);
-  color: var(--bg-deep);
+  filter: brightness(1.12);
 }

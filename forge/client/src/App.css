@@ -22,20 +22,17 @@
 .sidebar-header {
   padding: 12px;
   border-bottom: 1px solid var(--border-subtle);
-  background: linear-gradient(180deg, rgba(185, 103, 255, 0.08) 0%, transparent 100%);
 }
 
 .logo {
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: -0.03em;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: -0.02em;
+  color: var(--text);
 }
 
 .logo span {
-  background: var(--gradient-brand);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--foam);
 }
 
 .main {
