@@ -5,7 +5,7 @@ interface UseChatOptions {
   provider: string;
   model: string;
   apiKey: string;
-  onFileChange?: () => void;
+  onFileChange?: (detail?: { tool?: string; path?: string }) => void;
 }
 
 export function useChat({ provider, model, apiKey, onFileChange }: UseChatOptions) {

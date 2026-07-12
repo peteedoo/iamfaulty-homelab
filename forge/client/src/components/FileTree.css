@@ -18,23 +18,24 @@
   text-align: left;
   cursor: pointer;
   border-radius: 4px;
-  transition: background 0.1s, color 0.1s;
+  transition: background 0.12s, color 0.12s, box-shadow 0.12s;
 }
 
 .tree-item:hover {
   background: var(--bg-hover);
-  color: var(--text-secondary);
+  color: var(--cyan);
 }
 
 .tree-item.active {
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--pink);
+  box-shadow: inset 3px 0 0 var(--violet);
 }
 
 .tree-icon {
   width: 12px;
   flex-shrink: 0;
-  opacity: 0.5;
+  opacity: 0.7;
 }
 
 .tree-name {
