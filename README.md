@@ -7,6 +7,7 @@ Self-hosted media and automation stack running on a Mac mini M4 via OrbStack. Al
 | Node | Role |
 |------|------|
 | Mac mini M4 (`iamfaulty-mini`) | Docker host, primary compute |
+| AskJeevesAI (`192.168.68.55`) | Local LLM / ROCm inference (RX 9060 XT 16GB) — see [`docs/ASKJEEVESAI.md`](docs/ASKJEEVESAI.md) |
 | UGREEN NAS (`ILLMATIC`, `192.168.68.69`) | Compose files, media library, persistent share |
 | Raspberry Pi 5 | AdGuard Home, WireGuard |
 | Raspberry Pi 4 | Media center (Kodi) |
@@ -108,6 +109,7 @@ docker compose -f ~/homelab-data/truth-site/docker-compose.yml up -d
 
 - Compose files are the source of truth and live on the NAS, not in this repo. This repo tracks the configs that are harder to reconstruct: env files, NPM proxy host exports, AdGuard config, and operational notes.
 - **API Reference:** See [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md) for every service endpoint, auth method, and where to find credentials.
+- **AskJeevesAI:** See [`docs/ASKJEEVESAI.md`](docs/ASKJEEVESAI.md) for the AMD LLM node (Ubuntu, ROCm, Ollama, local organizer agent).
 - VPN kill switch (Gluetun) is required for qBittorrent. If the tunnel is down, downloads stop — by design.
 - Jellyfin media path is `/Volumes/homelab/media` mounted read-only inside the container.
 - **Caddy** in `homelab-agent-stack/` proxies internal services to `*.iamfaulty.com`. It binds `127.0.0.1:80/443` to avoid conflicting with Nginx Proxy Manager (`0.0.0.0:80/443`).
