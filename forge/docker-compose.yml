@@ -1,0 +1,18 @@
+services:
+  forge:
+    build: .
+    container_name: forge
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3100:3100"
+    volumes:
+      - ${FORGE_WORKSPACE:-.}:/workspace
+    environment:
+      - FORGE_WORKSPACE=/workspace
+      - FORGE_PROVIDER=${FORGE_PROVIDER:-ollama}
+      - FORGE_MODEL=${FORGE_MODEL:-qwen2.5-coder:7b}
+      - FORGE_BASE_URL=${FORGE_BASE_URL:-http://host.docker.internal:11434}
+      - FORGE_API_KEY=${FORGE_API_KEY:-}
+      - PORT=3100
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

@@ -1,0 +1,115 @@
+/* Cursor — default, matches the IDE you're replacing */
+[data-theme="cursor"] {
+  --bg-deep: #1e1e1e;
+  --bg-panel: #252526;
+  --bg-elevated: #2d2d2d;
+  --bg-hover: #37373d;
+  --border: #3c3c3c;
+  --border-subtle: #333333;
+  --text: #cccccc;
+  --text-secondary: #d4d4d4;
+  --text-muted: #858585;
+  --accent: #3794ff;
+  --accent-2: #3794ff;
+  --accent-warm: #dcdcaa;
+  --accent-soft: rgba(55, 148, 255, 0.12);
+  --danger: #f14c4c;
+  --warning: #cca700;
+  --user-bubble: #2a2d2e;
+  --tool-bg: #2a2d2e;
+  --send-bg: #0e639c;
+  --send-text: #ffffff;
+  --mono-bg: #1e1e1e;
+}
+
+[data-theme="light"] {
+  --bg-deep: #ffffff;
+  --bg-panel: #f3f3f3;
+  --bg-elevated: #e8e8e8;
+  --bg-hover: #e0e0e0;
+  --border: #cecece;
+  --border-subtle: #e5e5e5;
+  --text: #1e1e1e;
+  --text-secondary: #333333;
+  --text-muted: #6e6e6e;
+  --accent: #0066b8;
+  --accent-2: #0066b8;
+  --accent-warm: #795e26;
+  --accent-soft: rgba(0, 102, 184, 0.1);
+  --danger: #cd3131;
+  --warning: #9a6700;
+  --user-bubble: #eef4fc;
+  --tool-bg: #f6f6f6;
+  --send-bg: #0066b8;
+  --send-text: #ffffff;
+  --mono-bg: #ffffff;
+}
+
+[data-theme="dracula"] {
+  --bg-deep: #282a36;
+  --bg-panel: #21222c;
+  --bg-elevated: #343746;
+  --bg-hover: #44475a;
+  --border: #44475a;
+  --border-subtle: #383a4a;
+  --text: #f8f8f2;
+  --text-secondary: #f8f8f2;
+  --text-muted: #6272a4;
+  --accent: #bd93f9;
+  --accent-2: #ff79c6;
+  --accent-warm: #f1fa8c;
+  --accent-soft: rgba(189, 147, 249, 0.12);
+  --danger: #ff5555;
+  --warning: #ffb86c;
+  --user-bubble: #383a59;
+  --tool-bg: #313341;
+  --send-bg: #bd93f9;
+  --send-text: #282a36;
+  --mono-bg: #282a36;
+}
+
+[data-theme="gruvbox"] {
+  --bg-deep: #282828;
+  --bg-panel: #1d2021;
+  --bg-elevated: #32302f;
+  --bg-hover: #3c3836;
+  --border: #504945;
+  --border-subtle: #3c3836;
+  --text: #ebdbb2;
+  --text-secondary: #d5c4a1;
+  --text-muted: #928374;
+  --accent: #fe8019;
+  --accent-2: #fabd2f;
+  --accent-warm: #fabd2f;
+  --accent-soft: rgba(254, 128, 25, 0.12);
+  --danger: #fb4934;
+  --warning: #fabd2f;
+  --user-bubble: #3c3836;
+  --tool-bg: #32302f;
+  --send-bg: #fe8019;
+  --send-text: #1d2021;
+  --mono-bg: #282828;
+}
+
+[data-theme="oled"] {
+  --bg-deep: #000000;
+  --bg-panel: #0a0a0a;
+  --bg-elevated: #141414;
+  --bg-hover: #1f1f1f;
+  --border: #2a2a2a;
+  --border-subtle: #1a1a1a;
+  --text: #f5f5f5;
+  --text-secondary: #e0e0e0;
+  --text-muted: #737373;
+  --accent: #ffffff;
+  --accent-2: #a3a3a3;
+  --accent-warm: #d4d4d4;
+  --accent-soft: rgba(255, 255, 255, 0.08);
+  --danger: #ff4444;
+  --warning: #ffaa00;
+  --user-bubble: #141414;
+  --tool-bg: #0f0f0f;
+  --send-bg: #f5f5f5;
+  --send-text: #000000;
+  --mono-bg: #000000;
+}
