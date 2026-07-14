@@ -69,6 +69,19 @@ While generating, confirm GPU use:
 watch -n 1 rocm-smi
 ```
 
+## Cheatsheet
+
+Daily commands, OpenClaw wiring, and repo list: [`ASKJEEVESAI_CHEATSHEET.md`](ASKJEEVESAI_CHEATSHEET.md).
+
+## OpenClaw
+
+Yes — OpenClaw can use this host’s Ollama (native `/api/chat`, not `/v1`).
+
+- Run OpenClaw **on AskJeevesAI** with `http://127.0.0.1:11434`, or
+- Point existing `openclaw-hub` / mini OpenClaw at `http://192.168.68.55:11434` after binding Ollama to `0.0.0.0`
+
+See the cheatsheet for exact onboard commands. Avoid running two OpenClaw instances against the same Telegram bot.
+
 ## Local organizer agent
 
 Demo CodeAgent (smolagents + Ollama) that sorts files under `~/Organizer`.

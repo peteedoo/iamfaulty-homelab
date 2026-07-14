@@ -109,7 +109,7 @@ docker compose -f ~/homelab-data/truth-site/docker-compose.yml up -d
 
 - Compose files are the source of truth and live on the NAS, not in this repo. This repo tracks the configs that are harder to reconstruct: env files, NPM proxy host exports, AdGuard config, and operational notes.
 - **API Reference:** See [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md) for every service endpoint, auth method, and where to find credentials.
-- **AskJeevesAI:** See [`docs/ASKJEEVESAI.md`](docs/ASKJEEVESAI.md) for the AMD LLM node (Ubuntu, ROCm, Ollama, local organizer agent).
+- **AskJeevesAI:** See [`docs/ASKJEEVESAI.md`](docs/ASKJEEVESAI.md) and [`docs/ASKJEEVESAI_CHEATSHEET.md`](docs/ASKJEEVESAI_CHEATSHEET.md) for the AMD LLM node (Ubuntu, ROCm, Ollama, OpenClaw, local organizer agent).
 - VPN kill switch (Gluetun) is required for qBittorrent. If the tunnel is down, downloads stop — by design.
 - Jellyfin media path is `/Volumes/homelab/media` mounted read-only inside the container.
 - **Caddy** in `homelab-agent-stack/` proxies internal services to `*.iamfaulty.com`. It binds `127.0.0.1:80/443` to avoid conflicting with Nginx Proxy Manager (`0.0.0.0:80/443`).
