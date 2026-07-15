@@ -1,115 +1,96 @@
 # iamfaulty-homelab
 
-Self-hosted media and automation stack running on a Mac mini M4 via OrbStack. All compose files live on the NAS; container data lives on the mini's local SSD.
+Self-hosted media and automation stack. **Compute is multi-node** (2026-07 migration): most containers run on **minifw**; edge/DNS targets **Pi 5**; the Mac mini keeps only agent/inference survivors so OrbStack can quit for Metal.
+
+Active cutover docs: [`ops/migration-2026-07-14/README.md`](ops/migration-2026-07-14/README.md).
 
 ## Hardware
 
 | Node | Role |
 |------|------|
-| Mac mini M4 (`iamfaulty-mini`) | Docker host, primary compute |
+| Mac mini M4 (`iamfaulty-mini`) | **Survivors only:** iMessage bridge, OpenClaw, inference worker. Goal: OrbStack off → Metal inference. |
+| minifw (`192.168.68.64`, Ubuntu, x86_64) | Arr stack + migrated apps (jellyfin, homepage, gitea, …). NFS: `/mnt/homelab` → NAS |
 | AskJeevesAI (`192.168.68.55`) | Local LLM / ROCm inference (RX 9060 XT 16GB) — see [`docs/ASKJEEVESAI.md`](docs/ASKJEEVESAI.md) |
-| UGREEN NAS (`ILLMATIC`, `192.168.68.69`) | Compose files, media library, persistent share |
-| Raspberry Pi 5 | AdGuard Home, WireGuard |
+| UGREEN NAS (`ILLMATIC`, `192.168.68.69`) | Compose files (`/volume3/homelab/compose/`), media library. **Cannot host containers.** |
+| Raspberry Pi 5 (8GB) | Edge cluster target: blocky (DNS), Home Assistant, NetAlertX, speedtest-tracker, uptime-kuma |
 | Raspberry Pi 4 | Media center (Kodi) |
-| Raspberry Pi 3B | Home Assistant OS |
+| Raspberry Pi 3B | (legacy HA OS — migrating toward Pi 5) |
 
-## Stack
+## Stack (by destination)
 
-### Media
+### minifw — media & apps
 | Service | Purpose |
 |---------|---------|
-| [Jellyfin](https://jellyfin.org) | Media server — movies, shows, music |
-| [Jellyseerr](https://github.com/Fallenbagel/jellyseerr) | Request management UI |
-| [MeTube](https://github.com/alexta69/metube) | yt-dlp web frontend |
-| [slskd](https://github.com/slskd/slskd) | Soulseek daemon |
+| [Jellyfin](https://jellyfin.org) | Media server |
+| Arr stack (Radarr, Sonarr, …) | Acquisition |
+| [Homepage](https://gethomepage.dev) | Dashboard (**remaining move**) |
+| [Gitea](https://gitea.io), [Dozzle](https://dozzle.dev), [Beszel](https://github.com/henrygd/beszel) | Git / logs / monitoring |
+| [AnythingLLM](https://anythingllm.com), [Planka](https://planka.app) | LLM UI / kanban |
+| Caddy + sync-server | Reverse proxy (**split carefully from OpenClaw**) |
 
-### Arr Stack
-| Service | Purpose |
-|---------|---------|
-| Radarr | Movie collection manager |
-| Sonarr | TV collection manager |
-| Lidarr | Music collection manager |
-| Mylar3 | Comics collection manager |
-| Prowlarr | Indexer manager |
-| qBittorrent | Torrent client (routed through Gluetun VPN) |
-| Gluetun | WireGuard VPN kill switch |
-| Soularr | Lidarr → slskd bridge |
+### Pi 5 — edge
+blocky (DNS — **move last**), Home Assistant, NetAlertX, speedtest-tracker, uptime-kuma.
 
-### Infrastructure
-| Service | Purpose |
-|---------|---------|
-| [Nginx Proxy Manager](https://nginxproxymanager.com) | Reverse proxy + SSL |
-| [Portainer](https://portainer.io) | Docker management UI |
-| [Gitea](https://gitea.io) | Self-hosted Git |
-| [Dozzle](https://dozzle.dev) | Container log viewer |
-| [Beszel](https://github.com/henrygd/beszel) | System monitoring |
-| [Watchtower](https://github.com/containrrr/watchtower) | Automatic image updates |
-| [Duplicati](https://duplicati.com) | Backup to Backblaze B2 |
-| [Homepage](https://gethomepage.dev) | Dashboard |
+### iamfaulty-mini — survivors
+OpenClaw, iMessage bridge, inference worker.
 
-### Apps
-| Service | Purpose |
-|---------|---------|
-| [AnythingLLM](https://anythingllm.com) | Local LLM interface |
-| [Planka](https://planka.app) | Kanban board |
-| Portfolio | Static site (nginx) |
-| daily-brief | Custom morning briefing script |
-| dashboard | Custom stack status page |
+## True Architecture
 
-## True Architecture (4 Sources)
+Live compose is **not** primarily this GitHub repo. Assembled from:
 
-The live stack is **not** in this repo. It is assembled from 4 independent sources:
+| Source | Location | What it runs |
+|--------|----------|--------------|
+| 1. NAS compose | `/volume3/homelab/compose/` (minifw: `/mnt/homelab/compose/`) | Apps / media / (soon) proxy |
+| 2. Arr stack | minifw local or compose dir | qBit, Gluetun, Radarr, … |
+| 3. Agent / OpenClaw | mini `~/openclaw/` after **split** | OpenClaw only |
+| 4. Proxy | minifw after split | Caddy + sync-server |
+| 5. Edge | Pi 5 `/opt/homelab/` | blocky + edge apps |
 
-| Source | Location | What it runs | Notes |
-|--------|----------|--------------|-------|
-| 1. Arr Stack | `~/homelab-data/arr-stack/docker-compose.yml` | qBit, Gluetun, Radarr, Sonarr, Lidarr, Mylar3, Prowlarr, Readarr, Flaresolverr, Bookbounty, Huntorr, Soularr | Local SSD. Recently added: `ulimits.nofile: 65536` for Radarr |
-| 2. Apps / Infra | `/Volumes/homelab/compose/` (NAS Gitea repo) | Jellyfin, NPM, Portainer, Gitea, Planka, Homepage, Beszel, Duplicati, Watchtower, daily-brief, Dozzle, dashboard, board, portfolio, AnythingLLM | **Source of truth** for app compose files |
-| 3. Agent Stack | `~/homelab-agent-stack/docker-compose.yml` | Caddy (reverse proxy), sync-server | Proxies to `host.docker.internal` for host services |
-| 4. Truth Site | `~/homelab-data/truth-site/docker-compose.yml` | Static site container | Independent |
+> Target compose copies for remaining moves: [`reference/target-compose/`](reference/target-compose/).  
+> Quarantined arm64 leftovers: `/mnt/homelab/compose/_QUARANTINE-arm64-DELETE-AFTER-2026-09-01`.
 
-> ⚠️ **The `compose/` directory in this GitHub repo is stale.** It was an early backup but is missing services (flaresolverr, readarr, bookbounty, huntorr) and has wrong configs. Do not use it to bring up stacks. The NAS repo (`/Volumes/homelab/compose/`) is the actual source of truth.
+## Mac → minifw landmines
+
+1. `platform: linux/arm64` → `exec format error` on x86 — strip, re-pull.
+2. `USER_UID=501` / `USER_GID=20` → Linux `1000:1000` — fix yaml **and** `chown -R 1000:1000` data.
+
+See [`ops/migration-2026-07-14/MAC_TO_X86_CHECKLIST.md`](ops/migration-2026-07-14/MAC_TO_X86_CHECKLIST.md).
 
 ## Layout
 
 ```
-/Volumes/homelab/compose/         # NAS — compose files (source of truth)
-~/homelab-data/                   # Mini local SSD — container config/data volumes
-~/homelab-data/arr-stack/         # Arr stack compose + configs
-~/homelab-agent-stack/            # Caddy + sync-server
-~/homelab-data/truth-site/        # Truth site compose
-/Volumes/homelab/media/           # NAS — media library (Jellyfin)
+/volume3/homelab/compose/     # NAS — compose (source of truth for files)
+/mnt/homelab/                 # minifw NFS mount of the above
+/opt/homelab/                 # Pi 5 edge compose + data (target)
+~/openclaw/                   # mini — OpenClaw after agent-stack split
+/volume3/homelab/media/       # media library
 ```
 
-## Bringing the stack up
+## Bringing stacks up
 
 ```bash
-# 1. Arr stack (media acquisition)
-docker compose -f ~/homelab-data/arr-stack/docker-compose.yml up -d
+# minifw apps (example)
+docker network create proxy 2>/dev/null || true
+docker compose -f /mnt/homelab/compose/jellyfin/docker-compose.yml up -d
+# …other stacks under /mnt/homelab/compose/
 
-# 2. Apps / Infra (NAS must be mounted)
-for stack in jellyfin npm portainer gitea portfolio watchtower duplicati \
-             homepage dozzle daily-brief beszel anythingllm board dashboard; do
-  docker compose -f /Volumes/homelab/compose/$stack/docker-compose.yml up -d
-done
+# Pi edge (non-DNS first; blocky last)
+docker compose -f /opt/homelab/docker-compose.yml --profile apps up -d
+docker compose -f /opt/homelab/docker-compose.yml --profile dns up -d
 
-# 3. Agent stack (Caddy + sync-server)
-docker compose -f ~/homelab-agent-stack/docker-compose.yml up -d
-
-# 4. Truth site
-docker compose -f ~/homelab-data/truth-site/docker-compose.yml up -d
+# mini survivors
+bash ~/iamfaulty-homelab/ops/stack-up.sh
 ```
 
-> The NAS must be mounted before starting any stack. OrbStack handles the Docker runtime on macOS.
+Details: [`ops/STARTUP.md`](ops/STARTUP.md).
 
 ## Domain
 
-`iamfaulty.com` — proxied through Nginx Proxy Manager with Cloudflare tunnel for external access.
+`iamfaulty.com` — Cloudflare tunnel + reverse proxy. After proxy moves to minifw, update upstreams; keep OpenClaw routes pointed at the **mini LAN IP**.
 
 ## Notes
 
-- Compose files are the source of truth and live on the NAS, not in this repo. This repo tracks the configs that are harder to reconstruct: env files, NPM proxy host exports, AdGuard config, and operational notes.
-- **API Reference:** See [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md) for every service endpoint, auth method, and where to find credentials.
-- **AskJeevesAI:** See [`docs/ASKJEEVESAI.md`](docs/ASKJEEVESAI.md) and [`docs/ASKJEEVESAI_CHEATSHEET.md`](docs/ASKJEEVESAI_CHEATSHEET.md) for the AMD LLM node (Ubuntu, ROCm, Ollama, OpenClaw, local organizer agent).
-- VPN kill switch (Gluetun) is required for qBittorrent. If the tunnel is down, downloads stop — by design.
-- Jellyfin media path is `/Volumes/homelab/media` mounted read-only inside the container.
-- **Caddy** in `homelab-agent-stack/` proxies internal services to `*.iamfaulty.com`. It binds `127.0.0.1:80/443` to avoid conflicting with Nginx Proxy Manager (`0.0.0.0:80/443`).
+- **API Reference:** [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md)
+- **AskJeevesAI:** [`docs/ASKJEEVESAI.md`](docs/ASKJEEVESAI.md)
+- **Migration status:** [`status-reports/2026-07-14-migration.md`](status-reports/2026-07-14-migration.md)
+- VPN kill switch (Gluetun) remains required for qBittorrent on minifw.

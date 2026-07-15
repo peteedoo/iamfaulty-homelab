@@ -1,11 +1,16 @@
-# Reference — Live Compose Files
+# Reference — Compose Files
 
-These are copies of the live compose files from outside this repo, tracked here for backup and audit purposes.
+## Live backups (as-of last sync)
 
 | File | Source | Updated |
 |------|--------|---------|
-| `arr-stack-docker-compose.yml` | `~/homelab-data/arr-stack/docker-compose.yml` | 2026-05-26 — added healthchecks, Radarr ulimits |
-| `agent-stack-docker-compose.yml` | `~/homelab-agent-stack/docker-compose.yml` | 2026-05-26 — removed openclaw-hub, added healthchecks |
-| `Caddyfile` | `~/homelab-agent-stack/caddy/Caddyfile` | 2026-05-26 — removed dead routes, fixed openclaw target |
+| `arr-stack-docker-compose.yml` | `~/homelab-data/arr-stack/docker-compose.yml` | 2026-05-26 — healthchecks, Radarr ulimits |
+| `agent-stack-docker-compose.yml` | `~/homelab-agent-stack/docker-compose.yml` | 2026-05-26 — sync-server + caddy; **read before splitting OpenClaw** |
+| `Caddyfile` | `~/homelab-agent-stack/caddy/Caddyfile` | 2026-05-26 — mostly `host.docker.internal` |
 
-> These are **read-only backups**. The live files are the source of truth.
+> These are **read-only backups** of pre-migration Mac layouts. Live source of truth: NAS `/volume3/homelab/compose/` (minifw `/mnt/homelab/compose/`).
+
+## Target compose (2026-07 remaining moves)
+
+See [`target-compose/`](target-compose/) — homepage (minifw), edge (Pi 5), minifw-proxy (caddy+sync after split).  
+Runbooks: [`../ops/migration-2026-07-14/`](../ops/migration-2026-07-14/).

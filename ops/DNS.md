@@ -3,25 +3,28 @@
 ## Architecture
 
 ```
-Browser → Cloudflare (proxied) → cloudflared tunnel → NPM (localhost:80) → container
+Browser → Cloudflare (proxied) → cloudflared tunnel → reverse proxy → container
 ```
 
 All subdomains use the same tunnel (`3727ea81-b7a2-484c-8de9-3e55ab1a050c`).  
-DNS lives in Cloudflare. NPM handles routing and SSL. Cloudflared connects the two.
+DNS lives in Cloudflare. Local reverse proxy (Caddy / NPM) handles routing. Cloudflared connects the two.
+
+> **2026-07 migration:** LAN ad-blocking DNS is moving from the mini/OrbStack **blocky** instance to **Pi 5**. Move blocky **last** in the edge cluster — see [`migration-2026-07-14/edge-pi5/MIGRATE.md`](migration-2026-07-14/edge-pi5/MIGRATE.md). After cutover, point DHCP / clients at `PI_LAN_IP`, not the old resolver.
 
 ---
 
-## DNS resolvers on iamfaulty-mini
+## DNS resolvers (LAN)
 
-| Resolver | Address | Interface | Role |
-|----------|---------|-----------|------|
-| AdGuard Home | `192.168.68.90` | en0 (Wi-Fi) | Primary — handles all external DNS |
-| Tailscale | `100.64.0.2` | utun5 | Tailscale peer names only |
-| Cloudflare fallback | `1.1.1.1` | Wi-Fi (manual) | Backup if AdGuard is down |
+| Resolver | Address | Role | Status |
+|----------|---------|------|--------|
+| blocky (target: Pi 5) | `PI_LAN_IP` | Primary LAN DNS / ad-block | **Pending move — do last** |
+| AdGuard Home (legacy) | `192.168.68.90` | Prior primary on LAN | Retire when blocky on Pi is authoritative |
+| Tailscale | `100.64.0.2` | Tailscale peer names only | Avoid as general resolver |
+| Cloudflare fallback | `1.1.1.1` | Backup if local DNS is down | OK |
 
-Wi-Fi DNS is pinned manually:
+Mini Wi-Fi (until OrbStack/DNS cutover finishes) can still pin manually:
 ```bash
-sudo networksetup -setdnsservers Wi-Fi 192.168.68.90 1.1.1.1
+sudo networksetup -setdnsservers Wi-Fi <CURRENT_DNS_IP> 1.1.1.1
 ```
 
 ---
@@ -83,7 +86,7 @@ curl -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records" \
 
 **Current state:** Tailscale DNS settings disabled in prefs. Wi-Fi DNS pinned to AdGuard + 1.1.1.1. If the issue recurs after Tailscale restarts, quit Tailscale and relaunch — the dead resolver entry clears.
 
-**Long-term fix:** In the Tailscale admin panel (`tailscale.com/admin/dns`), set `192.168.68.90` as the global nameserver so Tailscale forwards to AdGuard instead of its own resolver.
+**Long-term fix:** In the Tailscale admin panel (`tailscale.com/admin/dns`), set the **current LAN DNS** (Pi blocky after cutover, or AdGuard `192.168.68.90` until then) as the global nameserver so Tailscale forwards there instead of its own resolver.
 
 ---
 
