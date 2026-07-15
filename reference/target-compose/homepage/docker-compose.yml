@@ -1,0 +1,26 @@
+# Target homepage compose — minifw (x86_64)
+
+# Copy to: /mnt/homelab/compose/homepage/docker-compose.yml
+# Then: sudo chown -R 1000:1000 ./config && docker compose pull && up -d
+
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    restart: unless-stopped
+    environment:
+      HOMEPAGE_ALLOWED_HOSTS: "*"
+      PUID: "1000"
+      PGID: "1000"
+      TZ: America/Chicago
+    volumes:
+      - ./config:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "127.0.0.1:3005:3000"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
