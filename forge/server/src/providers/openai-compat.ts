@@ -1,10 +1,18 @@
 import type {
-  ContentBlock,
   Message,
   StreamEvent,
   ToolDefinition,
   ToolUseContent,
 } from "./types.js";
+import {
+  assembleAssistantMessage,
+  openStream,
+  parseSSEData,
+  streamLines,
+  textFromBlocks,
+  toOpenAIToolDefs,
+  toolUsesFromBlocks,
+} from "./stream-utils.js";
 
 interface OpenAIToolCall {
   id: string;
@@ -28,18 +36,13 @@ export function toOpenAIMessage(msg: Message): Record<string, unknown> {
     };
   }
 
-  const text = msg.content
-    .filter((b): b is { type: "text"; text: string } => b.type === "text")
-    .map((b) => b.text)
-    .join("\n");
+  const text = textFromBlocks(msg.content);
 
-  const toolCalls = msg.content
-    .filter((b): b is ToolUseContent => b.type === "tool_use")
-    .map((b) => ({
-      id: b.id,
-      type: "function",
-      function: { name: b.name, arguments: JSON.stringify(b.input) },
-    }));
+  const toolCalls = toolUsesFromBlocks(msg.content).map((b) => ({
+    id: b.id,
+    type: "function",
+    function: { name: b.name, arguments: JSON.stringify(b.input) },
+  }));
 
   const result: Record<string, unknown> = { role: msg.role, content: text || null };
   if (toolCalls.length) result.tool_calls = toolCalls;
@@ -55,85 +58,56 @@ export async function streamOpenAIChat(
   onEvent: (event: StreamEvent) => void,
   errorLabel: string
 ): Promise<Message> {
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...headers,
-    },
-    body: JSON.stringify({
+  const reader = await openStream(
+    url,
+    headers,
+    {
       model,
       messages: messages.map(toOpenAIMessage),
-      tools: tools.map((t) => ({
-        type: "function",
-        function: {
-          name: t.name,
-          description: t.description,
-          parameters: t.input_schema,
-        },
-      })),
+      tools: toOpenAIToolDefs(tools),
       stream: true,
-    }),
-  });
+    },
+    errorLabel
+  );
 
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`${errorLabel} error: ${response.status} ${err}`);
-  }
-
-  const reader = response.body?.getReader();
-  if (!reader) throw new Error("No response body");
-
-  const decoder = new TextDecoder();
   let fullText = "";
   const toolCalls = new Map<number, OpenAIToolCall>();
-  let buffer = "";
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
+  for await (const line of streamLines(reader)) {
+    const data = parseSSEData(line);
+    if (data === null) continue;
 
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
+    const chunk = JSON.parse(data) as {
+      choices?: Array<{
+        delta?: {
+          content?: string;
+          tool_calls?: Array<{
+            index: number;
+            id?: string;
+            function?: { name?: string; arguments?: string };
+          }>;
+        };
+      }>;
+    };
 
-    for (const line of lines) {
-      if (!line.startsWith("data: ")) continue;
-      const data = line.slice(6).trim();
-      if (data === "[DONE]") continue;
+    const delta = chunk.choices?.[0]?.delta;
+    if (!delta) continue;
 
-      const chunk = JSON.parse(data) as {
-        choices?: Array<{
-          delta?: {
-            content?: string;
-            tool_calls?: Array<{
-              index: number;
-              id?: string;
-              function?: { name?: string; arguments?: string };
-            }>;
-          };
-        }>;
-      };
+    if (delta.content) {
+      fullText += delta.content;
+      onEvent({ type: "text_delta", text: delta.content });
+    }
 
-      const delta = chunk.choices?.[0]?.delta;
-      if (!delta) continue;
-
-      if (delta.content) {
-        fullText += delta.content;
-        onEvent({ type: "text_delta", text: delta.content });
-      }
-
-      if (delta.tool_calls) {
-        for (const tc of delta.tool_calls) {
-          const existing = toolCalls.get(tc.index) ?? {
-            id: tc.id ?? `tc_${tc.index}`,
-            function: { name: "", arguments: "" },
-          };
-          if (tc.id) existing.id = tc.id;
-          if (tc.function?.name) existing.function.name = tc.function.name;
-          if (tc.function?.arguments) existing.function.arguments += tc.function.arguments;
-          toolCalls.set(tc.index, existing);
-        }
+    if (delta.tool_calls) {
+      for (const tc of delta.tool_calls) {
+        const existing = toolCalls.get(tc.index) ?? {
+          id: tc.id ?? `tc_${tc.index}`,
+          function: { name: "", arguments: "" },
+        };
+        if (tc.id) existing.id = tc.id;
+        if (tc.function?.name) existing.function.name = tc.function.name;
+        if (tc.function?.arguments) existing.function.arguments += tc.function.arguments;
+        toolCalls.set(tc.index, existing);
       }
     }
   }
@@ -158,9 +132,5 @@ export async function streamOpenAIChat(
 
   onEvent({ type: "done" });
 
-  const content: ContentBlock[] = [];
-  if (fullText) content.push({ type: "text", text: fullText });
-  content.push(...parsedTools);
-
-  return { role: "assistant", content: content.length ? content : "" };
+  return assembleAssistantMessage(fullText, parsedTools);
 }

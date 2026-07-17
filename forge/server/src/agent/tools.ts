@@ -4,7 +4,11 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { glob } from "glob";
 import type { ToolDefinition } from "../providers/types.js";
-import { resolveWorkspacePath, getWorkspaceRoot } from "../utils/paths.js";
+import {
+  resolveWorkspacePath,
+  getWorkspaceRoot,
+  writeWorkspaceFile,
+} from "../utils/paths.js";
 
 const execAsync = promisify(exec);
 
@@ -108,10 +112,11 @@ async function readFile(input: Record<string, unknown>): Promise<string> {
 }
 
 async function writeFile(input: Record<string, unknown>): Promise<string> {
-  const filePath = resolveWorkspacePath(String(input.path));
-  await fs.mkdir(path.dirname(filePath), { recursive: true });
-  await fs.writeFile(filePath, String(input.content), "utf-8");
-  return `Wrote ${input.path} (${String(input.content).length} bytes)`;
+  const bytes = await writeWorkspaceFile(
+    String(input.path),
+    String(input.content)
+  );
+  return `Wrote ${input.path} (${bytes} bytes)`;
 }
 
 async function searchFiles(input: Record<string, unknown>): Promise<string> {

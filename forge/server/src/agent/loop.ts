@@ -5,6 +5,7 @@ import type {
   StreamEvent,
   ToolUseContent,
 } from "../providers/types.js";
+import { toolUsesFromBlocks } from "../providers/stream-utils.js";
 import { SYSTEM_PROMPT } from "./system-prompt.js";
 import { TOOL_DEFINITIONS, executeTool } from "./tools.js";
 
@@ -66,9 +67,7 @@ export async function runAgentLoop(
       typeof assistantMsg.content === "string"
         ? []
         : (assistantMsg.content as ContentBlock[]);
-    const pendingTools = blocks.filter(
-      (b): b is ToolUseContent => b.type === "tool_use"
-    );
+    const pendingTools = toolUsesFromBlocks(blocks);
 
     if (pendingTools.length === 0 && !assistantText.includes("```")) {
       onEvent({ type: "turn_complete" });

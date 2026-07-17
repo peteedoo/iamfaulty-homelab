@@ -1,7 +1,12 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { Router } from "express";
-import { getWorkspaceRoot, resolveWorkspacePath, toRelativePath } from "../utils/paths.js";
+import {
+  getWorkspaceRoot,
+  resolveWorkspacePath,
+  toRelativePath,
+  writeWorkspaceFile,
+} from "../utils/paths.js";
 
 export const filesRouter = Router();
 
@@ -50,9 +55,7 @@ filesRouter.put("/write", async (req, res) => {
       path: string;
       content: string;
     };
-    const filePath = resolveWorkspacePath(relPath);
-    await fs.mkdir(path.dirname(filePath), { recursive: true });
-    await fs.writeFile(filePath, content, "utf-8");
+    await writeWorkspaceFile(relPath, content);
     res.json({ ok: true, path: relPath });
   } catch (err) {
     res.status(400).json({ error: String(err) });
