@@ -1,0 +1,116 @@
+{
+  "_note": "Fictional sample data for DEALSCOUT_MOCK=1 — UI demo / pipeline test only. Shapes mirror the Weedmaps discovery API variants the parser handles.",
+  "listings_response": {
+    "data": {
+      "listings": [
+        {
+          "name": "Green Mile Denver (mock)",
+          "slug": "green-mile-denver",
+          "type": "dispensary",
+          "web_url": "https://example.com/mock/green-mile-denver",
+          "distance": 1.2,
+          "city": "Denver",
+          "rating": 4.7,
+          "license_type": "recreational"
+        },
+        {
+          "name": "Colfax Cannabis Co (mock)",
+          "slug": "colfax-cannabis-co",
+          "type": "dispensary",
+          "web_url": "https://example.com/mock/colfax-cannabis-co",
+          "distance": 2.8,
+          "city": "Denver",
+          "rating": 4.4,
+          "license_type": "hybrid"
+        },
+        {
+          "name": "Mile High Botanicals (mock)",
+          "slug": "mile-high-botanicals",
+          "type": "delivery",
+          "web_url": "https://example.com/mock/mile-high-botanicals",
+          "distance": 4.1,
+          "city": "Denver",
+          "rating": 4.9,
+          "license_type": "medical"
+        }
+      ]
+    }
+  },
+  "menus": {
+    "green-mile-denver": {
+      "data": {
+        "menu_items": [
+          {
+            "name": "Cloudline 1g Disposable — Blue Dream",
+            "brand": { "name": "Cloudline (mock)" },
+            "category": { "name": "Vape Pens", "slug": "vape-pens" },
+            "on_sale": true,
+            "prices": { "price": 22.0, "original_price": 35.0, "unit": "1g" },
+            "url": "/mock/green-mile-denver/menu/cloudline-blue-dream"
+          },
+          {
+            "name": "Peak80 2g All-In-One — Gelato",
+            "brand": { "name": "Peak80 (mock)" },
+            "category": { "name": "Vape Pens", "slug": "vape-pens" },
+            "weight_prices": [
+              { "label": "2g", "price": 48.0, "sale_price": 38.0 }
+            ]
+          },
+          {
+            "name": "MileHi Labs Live Resin Cartridge 1g",
+            "brand": { "name": "MileHi Labs (mock)" },
+            "category": { "name": "Cartridges", "slug": "cartridges" },
+            "prices": { "price": 30.0 }
+          },
+          {
+            "name": "Sunset Gummies 100mg",
+            "brand": { "name": "Sunset (mock)" },
+            "category": { "name": "Edibles", "slug": "edibles" },
+            "prices": { "price": 15.0 }
+          }
+        ]
+      }
+    },
+    "colfax-cannabis-co": {
+      "data": {
+        "menu_items": [
+          {
+            "name": "Cloudline 0.5g Dispo — Sour Diesel",
+            "brand": { "name": "Cloudline (mock)" },
+            "category": { "name": "Vape Pens" },
+            "is_on_sale": true,
+            "price": 18.0,
+            "discounted_price": 12.0,
+            "picture_url": "https://example.com/mock/dispo.jpg"
+          },
+          {
+            "name": "Peak80 1g Disposable — Wedding Cake",
+            "brand": { "name": "Peak80 (mock)" },
+            "category": { "name": "Vape Pens" },
+            "prices": { "price": 25.0 }
+          }
+        ]
+      }
+    },
+    "mile-high-botanicals": {
+      "data": {
+        "menu_items": [
+          {
+            "name": "House 2g Disposable Vape — Runtz",
+            "brand": "House Brand (mock)",
+            "category": { "name": "Vape Pens" },
+            "weight_prices": [
+              { "label": "2g", "price": 55.0, "original_price": 70.0 }
+            ]
+          },
+          {
+            "name": "Terp Tank AIO 1g — Papaya Punch",
+            "brand": { "name": "Terp Tank (mock)" },
+            "category": { "name": "Vape Pens" },
+            "prices": { "price": 28.0, "regular_price": 40.0 }
+          }
+        ]
+      }
+    }
+  }
+}

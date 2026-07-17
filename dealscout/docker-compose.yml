@@ -1,0 +1,17 @@
+services:
+  dealscout:
+    build: .
+    container_name: dealscout
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8420:8420"
+    volumes:
+      - ./cache:/data
+    environment:
+      # Denver by default — set your own coords for "near me"
+      - DEALSCOUT_LAT=${DEALSCOUT_LAT:-39.7392}
+      - DEALSCOUT_LNG=${DEALSCOUT_LNG:--104.9903}
+      - DEALSCOUT_RADIUS_MI=${DEALSCOUT_RADIUS_MI:-10}
+      - DEALSCOUT_MAX_LISTINGS=${DEALSCOUT_MAX_LISTINGS:-20}
+      - DEALSCOUT_CACHE_TTL=${DEALSCOUT_CACHE_TTL:-1800}
+      - DEALSCOUT_MOCK=${DEALSCOUT_MOCK:-0}
