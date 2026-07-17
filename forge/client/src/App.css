@@ -46,6 +46,21 @@
   min-width: 0;
 }
 
+.workspace-error {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  max-width: 60ch;
+  padding: 8px 14px;
+  border-radius: 6px;
+  background: #7f1d1d;
+  color: #fee2e2;
+  font-size: 13px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
 @media (max-width: 900px) {
   .app.chat-focus {
     grid-template-columns: 180px 1fr;

@@ -105,7 +105,9 @@ export class AnthropicProvider implements LLMProvider {
           try {
             currentTool.input = JSON.parse(toolJson || "{}");
           } catch {
-            currentTool.input = {};
+            // Preserve the raw arguments rather than silently dropping them,
+            // so a malformed tool call is visible instead of running with {}.
+            currentTool.input = { raw: toolJson };
           }
           const toolUse = currentTool as ToolUseContent;
           toolCalls.push(toolUse);

@@ -9,6 +9,10 @@
 export PATH=/opt/homebrew/bin:/usr/local/bin:$PATH
 LOG=/tmp/stack-up.log
 
+# Track failures so the script can exit non-zero: otherwise a failed
+# `docker compose up` is only logged and the caller (LaunchAgent) sees success.
+failures=0
+
 echo "=== stack-up (mini survivors): $(date) ===" >> "$LOG"
 
 # Wait for OrbStack only while it is still required for OpenClaw/bridge/worker.
@@ -25,9 +29,12 @@ fi
 OPENCLAW_COMPOSE="${OPENCLAW_COMPOSE:-$HOME/openclaw/docker-compose.yml}"
 if [ -f "$OPENCLAW_COMPOSE" ]; then
   echo "Starting openclaw..." >> "$LOG"
-  docker compose -f "$OPENCLAW_COMPOSE" up -d >> "$LOG" 2>&1 \
-    && echo "  openclaw: ok" >> "$LOG" \
-    || echo "  openclaw: FAILED" >> "$LOG"
+  if docker compose -f "$OPENCLAW_COMPOSE" up -d >> "$LOG" 2>&1; then
+    echo "  openclaw: ok" >> "$LOG"
+  else
+    echo "  openclaw: FAILED" >> "$LOG"
+    failures=$((failures + 1))
+  fi
 else
   echo "WARN: $OPENCLAW_COMPOSE missing — split agent stack first." >> "$LOG"
 fi
@@ -39,10 +46,18 @@ for extra in \
   [ -n "$extra" ] && [ -f "$extra" ] || continue
   name=$(basename "$(dirname "$extra")")
   echo "Starting $name..." >> "$LOG"
-  docker compose -f "$extra" up -d >> "$LOG" 2>&1 \
-    && echo "  $name: ok" >> "$LOG" \
-    || echo "  $name: FAILED" >> "$LOG"
+  if docker compose -f "$extra" up -d >> "$LOG" 2>&1; then
+    echo "  $name: ok" >> "$LOG"
+  else
+    echo "  $name: FAILED" >> "$LOG"
+    failures=$((failures + 1))
+  fi
 done
 
-echo "=== done: $(date) ===" >> "$LOG"
+echo "=== done ($failures failure(s)): $(date) ===" >> "$LOG"
 docker ps --format "table {{.Names}}\t{{.Status}}" >> "$LOG" 2>/dev/null || true
+
+if [ "$failures" -gt 0 ]; then
+  echo "stack-up: $failures service(s) failed to start — see $LOG" >&2
+  exit 1
+fi

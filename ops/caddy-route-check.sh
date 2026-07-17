@@ -8,6 +8,13 @@ echo "=== Caddy Route Review ==="
 echo "Caddyfile: $CADDYFILE"
 echo ""
 
+# Fail loudly on a missing Caddyfile instead of letting grep error to stderr
+# and the script exit 0 with empty, misleading output.
+if [ ! -f "$CADDYFILE" ]; then
+  echo "ERROR: Caddyfile not found: $CADDYFILE" >&2
+  exit 1
+fi
+
 # Extract host:port targets from reverse_proxy lines
 # Handles both "reverse_proxy host:port" and "reverse_proxy host" (default port 80)
 grep -E '^\s*reverse_proxy\s+' "$CADDYFILE" | while read -r line; do

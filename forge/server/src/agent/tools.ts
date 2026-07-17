@@ -162,13 +162,39 @@ async function runCommand(
     return { output: "Command blocked for safety", isError: true };
   }
 
-  const { stdout, stderr } = await execAsync(command, {
-    cwd: getWorkspaceRoot(),
-    timeout: 60_000,
-    maxBuffer: 1024 * 1024,
-    shell: "/bin/bash",
-  });
+  try {
+    const { stdout, stderr } = await execAsync(command, {
+      cwd: getWorkspaceRoot(),
+      timeout: 60_000,
+      maxBuffer: 1024 * 1024,
+      shell: "/bin/bash",
+    });
 
-  const output = [stdout, stderr].filter(Boolean).join("\n").trim();
-  return { output: output || "(no output)", isError: false };
+    const output = [stdout, stderr].filter(Boolean).join("\n").trim();
+    return { output: output || "(no output)", isError: false };
+  } catch (err) {
+    // A non-zero exit (or timeout) rejects with an ExecException that carries
+    // the command's stdout/stderr. Surface those instead of discarding them,
+    // otherwise the failure output the caller needs is silently lost.
+    const execErr = err as {
+      stdout?: string;
+      stderr?: string;
+      code?: number | string;
+      killed?: boolean;
+      signal?: string;
+      message?: string;
+    };
+    const parts = [
+      execErr.killed || execErr.signal
+        ? `Command terminated${execErr.signal ? ` (signal ${execErr.signal})` : " (timed out)"}`
+        : `Command failed${execErr.code !== undefined ? ` (exit code ${execErr.code})` : ""}`,
+      execErr.stdout?.trim(),
+      execErr.stderr?.trim(),
+    ];
+    const output = parts.filter(Boolean).join("\n").trim();
+    return {
+      output: output || execErr.message || "Command failed with no output",
+      isError: true,
+    };
+  }
 }

@@ -61,6 +61,13 @@ export function useChat({ provider, model, apiKey, onFileChange }: UseChatOption
           }),
         });
 
+        if (!res.ok) {
+          const detail = await res.text().catch(() => "");
+          throw new Error(
+            `Chat request failed: ${res.status} ${res.statusText}${detail ? ` — ${detail}` : ""}`
+          );
+        }
+
         const reader = res.body?.getReader();
         if (!reader) throw new Error("No stream");
 
@@ -88,8 +95,19 @@ export function useChat({ provider, model, apiKey, onFileChange }: UseChatOption
             if (!data) continue;
             const parsed = JSON.parse(data);
 
+            if (eventType === "error") {
+              throw new Error(
+                (parsed as { message?: string }).message ?? "Unknown server error"
+              );
+            }
+
             if (eventType === "agent") {
               const event = parsed as AgentEvent;
+
+              if (event.type === "error") {
+                throw new Error(event.text ?? "Agent error");
+              }
+
               setMessages((prev) =>
                 prev.map((m) => {
                   if (m.id !== assistantId) return m;

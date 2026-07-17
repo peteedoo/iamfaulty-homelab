@@ -61,6 +61,12 @@ export default function App() {
         />
       </aside>
 
+      {workspace.error && (
+        <div className="workspace-error" role="alert">
+          {workspace.error}
+        </div>
+      )}
+
       {hasEditor && (
         <main className="main">
           <EditorPane
