@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { runAgentLoop } from "../agent/loop.js";
 import { createProvider, type Message, type ProviderConfig } from "../providers/index.js";
-import { getWorkspaceRoot, setWorkspaceRoot } from "../utils/paths.js";
+import { getWorkspaceRoot } from "../utils/paths.js";
 
 export const chatRouter = Router();
 
@@ -9,7 +9,6 @@ interface ChatRequest {
   message: string;
   history?: Message[];
   provider?: ProviderConfig;
-  workspace?: string;
 }
 
 chatRouter.post("/", async (req, res) => {
@@ -18,10 +17,6 @@ chatRouter.post("/", async (req, res) => {
   if (!body.message?.trim()) {
     res.status(400).json({ error: "message required" });
     return;
-  }
-
-  if (body.workspace) {
-    setWorkspaceRoot(body.workspace);
   }
 
   const providerConfig: ProviderConfig = body.provider ?? {

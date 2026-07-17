@@ -132,8 +132,11 @@ Serves the built client from the Express server on port 3100.
 ## Security notes
 
 - The agent can run shell commands and write files — only point it at workspaces you trust
-- Path traversal is blocked (files must stay inside `FORGE_WORKSPACE`)
-- Destructive commands (`rm -rf /`, etc.) are blocked
+- Path traversal is blocked (files must stay inside `FORGE_WORKSPACE`); the workspace root is fixed by `FORGE_WORKSPACE` and cannot be changed by API requests
+- Destructive commands (`rm -rf /`, etc.) are blocked (best-effort blocklist only — do not rely on it as a sandbox)
+- Cross-origin browser access is blocked by default; set `FORGE_ALLOWED_ORIGINS` to allow specific origins
+- Set `FORGE_AUTH_TOKEN` to require `Authorization: Bearer <token>` on the API whenever Forge is exposed beyond localhost
+- Keep Forge bound to localhost (or behind an authenticating reverse proxy); the API grants file and shell access with no auth unless `FORGE_AUTH_TOKEN` is set
 
 ## License
 
