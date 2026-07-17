@@ -32,14 +32,19 @@ def organize_file(filename: str, category: str) -> str:
     """
     if category not in CATEGORIES:
         return f"Invalid category: {category}. Use one of {sorted(CATEGORIES)}"
-    src = INBOX / filename
-    if not src.is_file():
+    # Enforce the sandbox: only operate on a plain filename inside the inbox,
+    # never a path that escapes it via ".." or an absolute path.
+    name = Path(filename).name
+    if name != filename or name in ("", ".", ".."):
+        return f"Refused: filename must be a plain name in the inbox: {filename}"
+    src = (INBOX / name).resolve()
+    if src.parent != INBOX.resolve() or not src.is_file():
         return f"File not found in inbox: {filename}"
     dest_dir = SORTED / category
     dest_dir.mkdir(parents=True, exist_ok=True)
-    dest = dest_dir / filename
+    dest = dest_dir / name
     shutil.move(str(src), str(dest))
-    return f"OK: {filename} -> {category}/"
+    return f"OK: {name} -> {category}/"
 
 
 @tool
@@ -80,6 +85,7 @@ Rules:
    - jpg/png -> Images
    - txt -> Notes
    - xlsx -> Finance
+   - anything else -> Other
 4. Call show_sorted at the end and summarize.
 """
     print(agent.run(task))

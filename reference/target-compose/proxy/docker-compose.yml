@@ -26,9 +26,11 @@ services:
     image: caddy:2-alpine
     container_name: caddy
     restart: unless-stopped
+    # Reverse proxy must be reachable from the LAN (domain-based routing for
+    # other homelab devices), so publish on all interfaces — not 127.0.0.1.
+    # Only :80 is served today; publish :443 once TLS is configured in Caddyfile.
     ports:
-      - "127.0.0.1:80:80"
-      - "127.0.0.1:443:443"
+      - "80:80"
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:80"]
       interval: 30s

@@ -101,8 +101,8 @@ async function readFile(input: Record<string, unknown>): Promise<string> {
   const filePath = resolveWorkspacePath(String(input.path));
   const content = await fs.readFile(filePath, "utf-8");
   const lines = content.split("\n");
-  const offset = Number(input.offset ?? 1);
-  const limit = Number(input.limit ?? 500);
+  const offset = Math.max(1, Math.floor(Number(input.offset ?? 1)) || 1);
+  const limit = Math.max(1, Math.floor(Number(input.limit ?? 500)) || 500);
   const slice = lines.slice(offset - 1, offset - 1 + limit);
   return slice.map((line, i) => `${offset + i}|${line}`).join("\n");
 }
@@ -157,8 +157,17 @@ async function runCommand(
   input: Record<string, unknown>
 ): Promise<{ output: string; isError: boolean }> {
   const command = String(input.command);
-  const blocked = ["rm -rf /", "mkfs", "dd if=", ":(){", "fork bomb"];
-  if (blocked.some((b) => command.includes(b))) {
+  // Best-effort guard against a few catastrophic patterns. This is NOT a
+  // security boundary — the real controls are the workspace sandbox and the
+  // FORGE_AUTH_TOKEN / localhost binding. Do not rely on this list.
+  const blocked = [
+    /\brm\s+-[rf]{1,2}\s+\/(?:\s|$|\*)/, // rm -rf / , rm -rf /*
+    /\bmkfs\b/,
+    /\bdd\s+if=/,
+    /:\(\)\s*\{.*\}\s*;/, // fork bomb
+    /\bfind\s+\/\s.*-delete\b/,
+  ];
+  if (blocked.some((re) => re.test(command))) {
     return { output: "Command blocked for safety", isError: true };
   }
 

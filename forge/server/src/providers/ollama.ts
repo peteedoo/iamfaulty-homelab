@@ -22,7 +22,7 @@ export class OllamaProvider implements LLMProvider {
     tools: ToolDefinition[],
     onEvent: (event: StreamEvent) => void
   ): Promise<Message> {
-    const ollamaMessages = messages.map(toOllamaMessage);
+    const ollamaMessages = messages.flatMap(toOllamaMessages);
 
     const response = await fetch(`${this.baseUrl}/api/chat`, {
       method: "POST",
@@ -103,9 +103,9 @@ export class OllamaProvider implements LLMProvider {
   }
 }
 
-function toOllamaMessage(msg: Message): Record<string, unknown> {
+function toOllamaMessages(msg: Message): Record<string, unknown>[] {
   if (typeof msg.content === "string") {
-    return { role: msg.role, content: msg.content };
+    return [{ role: msg.role, content: msg.content }];
   }
 
   const textParts = msg.content
@@ -126,12 +126,13 @@ function toOllamaMessage(msg: Message): Record<string, unknown> {
       content: (b as { content: string }).content,
     }));
 
-  if (toolResults.length) return toolResults[0] as Record<string, unknown>;
+  // Emit one `tool` message per result rather than dropping all but the first.
+  if (toolResults.length) return toolResults;
 
   const result: Record<string, unknown> = {
     role: msg.role === "tool" ? "tool" : msg.role,
     content: textParts || "",
   };
   if (toolCalls.length) result.tool_calls = toolCalls;
-  return result;
+  return [result];
 }

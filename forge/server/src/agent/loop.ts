@@ -70,11 +70,6 @@ export async function runAgentLoop(
       (b): b is ToolUseContent => b.type === "tool_use"
     );
 
-    if (pendingTools.length === 0 && !assistantText.includes("```")) {
-      onEvent({ type: "turn_complete" });
-      return newMessages;
-    }
-
     const toolsToRun = pendingTools.length ? pendingTools : toolUses;
     if (toolsToRun.length === 0) {
       onEvent({ type: "turn_complete" });
