@@ -1,5 +1,5 @@
-tunnel: 3727ea81-b7a2-484c-8de9-3e55ab1a050c
-credentials-file: /Users/peteedoo/.cloudflared/3727ea81-b7a2-484c-8de9-3e55ab1a050c.json
+tunnel: <redacted>
+credentials-file: /Users/peteedoo/.cloudflared/<redacted>.json
 protocol: http2
 
 ingress:

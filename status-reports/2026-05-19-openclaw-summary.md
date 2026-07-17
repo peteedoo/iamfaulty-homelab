@@ -14,7 +14,7 @@
 - **Proxy:** Nginx Proxy Manager → `80`, `443`, `81`
 - **Media:** Jellyfin → `8096`; Jellyseerr → `5055`
 - **\*arr Stack:** Sonarr `8989`, Radarr `7878`, Lidarr `8686`, Prowlarr `9696`, Mylar3 `8090`
-- **Download:** qBittorrent, slskd, MeTube `8081`, Soularr
+- **Download:** download client (name omitted), slskd, MeTube `8081`, Soularr
 - **Dev/Prod:** Gitea `3000/2222`, Planka `3333`, Portainer `9000/9443`, Homepage `3005`
 - **Custom Apps:** Daily-brief `3003`, Board-dashboard `3334`, Dashboard `3004`, Portfolio `3001`
 - **LLM:** AnythingLLM `3002`
@@ -23,6 +23,6 @@
 
 ## Issues
 
-- `qbittorrent` and `slskd` show **no published ports** (likely host networking).
+- `slskd` (and the download client) show **no published ports** (likely host networking).
 - Load avg **4.0** on 10 cores — moderate CPU pressure.
 - Host uptime only ~4.5 hours; looks like a recent reboot. No unhealthy or dead containers though.

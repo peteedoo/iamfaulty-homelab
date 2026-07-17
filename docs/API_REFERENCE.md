@@ -14,7 +14,6 @@
 | **Lidarr** | lidarr | `8686` | `/api/v1` | `X-Api-Key` header | `~/homelab-data/arr/lidarr/config.xml` |
 | **Readarr** | readarr | `8787` | `/api/v1` | `X-Api-Key` header | `~/homelab-data/arr/readarr/config.xml` |
 | **Mylar3** | mylar3 | `8090` | `/api` | `apikey` query param | Web UI → Settings |
-| **qBittorrent** | qbittorrent | `8080` | `/api/v2` | Cookie + `X-API-Key` (optional) | Web UI → Options → Web UI |
 | **Jellyfin** | jellyfin | `8096` | `/System`, `/Items`, `/Users` | `X-Emby-Token` header | Jellyfin Dashboard → Advanced → API Keys |
 | **Jellyseerr** | jellyseerr | `5055` | `/api/v1` | `X-Api-Key` header | `~/homelab-data/arr/jellyseerr/settings.json` |
 | **slskd** | slskd | `5030`* | `/api/v0` | Bearer token or basic auth | `~/homelab-data/arr/slskd/slskd.yml` |
@@ -101,17 +100,6 @@ All *arr apps share the same auth pattern: `X-Api-Key` header.
 - **Auth:** `apikey=<key>` query parameter
 - **Key location:** Web UI → Configuration → Web Interface → API Key
 - **Note:** Uses query-param auth, not header auth like the *arr apps.
-
-### qBittorrent
-- **Port:** `127.0.0.1:8080`
-- **API:** `http://127.0.0.1:8080/api/v2`
-- **Auth:** Cookie-based login session (POST `/api/v2/auth/login`)
-- **Alternative:** Enable "Bypass authentication for clients on localhost" and use no auth from the mini.
-- **Docs:** https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)
-- **Common endpoints:**
-  - `POST /api/v2/auth/login` — login (returns cookie)
-  - `GET /api/v2/torrents/info` — list torrents
-  - `POST /api/v2/torrents/add` — add torrent
 
 ### FlareSolverr
 - **Port:** `127.0.0.1:8191`
@@ -279,7 +267,6 @@ These are the public-facing URLs proxied through Caddy. Use these for external a
 | Subdomain | Service | Internal Port |
 |-----------|---------|---------------|
 | `jellyfin.iamfaulty.com` | Jellyfin | 8096 |
-| `qbittorrent.iamfaulty.com` | qBittorrent | 8080 |
 | `sonarr.iamfaulty.com` | Sonarr | 8989 |
 | `radarr.iamfaulty.com` | Radarr | 7878 |
 | `lidarr.iamfaulty.com` | Lidarr | 8686 |
@@ -320,5 +307,5 @@ Most *arr apps have `AuthenticationRequired: DisabledForLocalAddresses`. If you 
 ### slskd network mode
 slskd runs with `network_mode: host`. Its API is on `127.0.0.1:5030`, not inside the Docker bridge network.
 
-### qBittorrent login
-If qBittorrent returns `403 Forbidden` on API calls, you need to POST to `/api/v2/auth/login` first to get a session cookie, or enable "Bypass auth for localhost" in Web UI settings.
+### Download client
+The arr stack's download client and its VPN kill switch are intentionally omitted from this public document.

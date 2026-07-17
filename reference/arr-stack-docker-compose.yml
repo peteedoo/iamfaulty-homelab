@@ -1,27 +1,5 @@
 services:
-  qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:latest
-    container_name: qbittorrent
-    platform: linux/arm64
-    restart: unless-stopped
-    environment:
-      - PUID=501
-      - PGID=20
-      - TZ=America/Chicago
-      - WEBUI_PORT=8080
-    ports:
-      - "127.0.0.1:8080:8080"
-    volumes:
-      - /Users/peteedoo/homelab-data/arr/qbittorrent:/config
-      - /Volumes/homelab/media:/data
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - default
+  # NOTE: the download-client service is intentionally omitted from this public copy.
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
@@ -247,8 +225,7 @@ services:
     restart: unless-stopped
     environment:
       - TZ=America/Chicago
-      - torrenter_ip=qbittorrent
-      - torrenter_port=8080
+      # download-client connection env omitted from public copy
       - media_server_addresses=Jellyfin:http://host.docker.internal:8096
     ports:
       - "127.0.0.1:5002:5000"

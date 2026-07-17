@@ -54,12 +54,12 @@ Unknown exact trigger. Possible causes:
 
 | Component | Details |
 |-----------|---------|
-| Host | Mac mini M4 (`iamfaulty-mini`) |
+| Host | ARM mini PC (Apple Silicon), primary Docker host |
 | OS | macOS (darwin/arm64) |
-| Tailscale | Active, `iamfaulty-mini-1.tailc0ac22.ts.net` |
+| Tailscale | Active, machine name `<redacted>.ts.net` |
 | Tailscale DNS | `100.64.0.2` (MagicDNS enabled in console) |
 | Cloudflared | v2026.3.0, installed via Homebrew |
-| Tunnel ID | `3727ea81-b7a2-484c-8de9-3e55ab1a050c` |
+| Tunnel ID | `<redacted>` |
 | Reverse Proxy | Nginx Proxy Manager (`npm` container) on `0.0.0.0:80/443` |
 
 ## 4. Fix Applied
@@ -106,7 +106,7 @@ edge-ip-version: auto
 ### 4.3 DNS record created
 
 ```bash
-cloudflared tunnel route dns 3727ea81-b7a2-484c-8de9-3e55ab1a050c truth.iamfaulty.com
+cloudflared tunnel route dns <tunnel-id> truth.iamfaulty.com
 ```
 
 Result: CNAME `truth.iamfaulty.com` → `<tunnel-id>.cfargotunnel.com`
@@ -139,12 +139,9 @@ curl -s -o /dev/null -w "%{http_code}" https://openclaw.iamfaulty.com/
 # → 200
 ```
 
-Tunnel connections (4 active edges):
+Tunnel connections (4 active edges, edge IPs and colo locations redacted):
 ```
-connIndex=0 ip=198.41.200.53  location=slc01
-connIndex=1 ip=198.41.192.77  location=den03
-connIndex=2 ip=198.41.192.7   location=den03
-connIndex=3 ip=198.41.200.193 location=slc01
+connIndex=0..3 — 4 healthy edge connections
 ```
 
 ## 6. Rollback Plan

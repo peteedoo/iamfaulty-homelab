@@ -1,5 +1,5 @@
 #!/bin/bash
-# Disk usage alert for iamfaulty-mini
+# Disk usage alert for the primary Docker host
 # Run via cron: 0 * * * * /Users/peteedoo/iamfaulty-homelab/ops/disk-alert.sh
 
 THRESHOLD=85

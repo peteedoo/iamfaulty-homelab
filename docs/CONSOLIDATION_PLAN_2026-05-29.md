@@ -7,7 +7,7 @@
 
 ## 1. EXECUTIVE SUMMARY
 
-The iamfaulty-homelab is a 40+ container media/automation stack running on a Mac mini M4 via OrbStack. It is currently fragmented across **4 independent sources** with significant config drift, stale archives, security debt, and operational complexity. This document catalogs every service, identifies all issues, and proposes a consolidation plan.
+The iamfaulty-homelab is a 40+ container media/automation stack running on an Apple Silicon ARM mini PC via OrbStack. It is currently fragmented across **4 independent sources** with significant config drift, stale archives, security debt, and operational complexity. This document catalogs every service, identifies all issues, and proposes a consolidation plan.
 
 **Current container count:** 40 running containers (from `docker ps`)
 **Active compose files:** 15+ across 3 directory trees
@@ -19,11 +19,11 @@ The iamfaulty-homelab is a 40+ container media/automation stack running on a Mac
 
 | Node | Role | OS/Platform |
 |------|------|-------------|
-| Mac mini M4 (`iamfaulty-mini`) | Docker host, primary compute | macOS + OrbStack |
-| UGREEN NAS (`ILLMATIC`, `192.168.68.69`) | Compose files, media library, persistent share | SMB |
-| Raspberry Pi 5 | AdGuard Home, WireGuard | Linux |
-| Raspberry Pi 4 | Media center (Kodi) | Linux |
-| Raspberry Pi 3B | Home Assistant OS | HAOS |
+| ARM mini PC (Apple Silicon) | Docker host, primary compute | macOS + OrbStack |
+| NAS | Compose files, media library, persistent share | SMB/NFS |
+| ARM SBC #1 | AdGuard Home, WireGuard | Linux |
+| ARM SBC #2 | Media center (Kodi) | Linux |
+| ARM SBC #3 | Home Assistant OS | HAOS |
 
 **Storage layout:**
 - `/Volumes/homelab/` — NAS mount (SMB), compose files source of truth
@@ -43,7 +43,7 @@ The iamfaulty-homelab is a 40+ container media/automation stack running on a Mac
 | MeTube | metube | `ghcr.io/alexta69/metube:latest` | `8081` | default | `~/homelab-data/arr-stack/docker-compose.yml` |
 | slskd | slskd | `slskd/slskd:latest` | `5030` (host) | host | `~/homelab-data/arr-stack/docker-compose.yml` |
 | Soularr | soularr | `mrusse08/soularr:latest` | — | default | `~/homelab-data/arr-stack/docker-compose.yml` |
-| qBittorrent | qbittorrent | `lscr.io/linuxserver/qbittorrent:latest` | `8080` | default | `~/homelab-data/arr-stack/docker-compose.yml` |
+| Download client | (redacted) | (redacted) | `8080` | default | `~/homelab-data/arr-stack/docker-compose.yml` |
 | BookBounty | bookbounty | `thewicklowwolf/bookbounty:latest` | `5000` | default | `~/homelab-data/arr-stack/docker-compose.yml` |
 | Huntorr | huntorr | `thewicklowwolf/huntorr:latest` | `5002` | default | `~/homelab-data/arr-stack/docker-compose.yml` |
 
@@ -60,7 +60,7 @@ The iamfaulty-homelab is a 40+ container media/automation stack running on a Mac
 | FlareSolverr | flaresolverr | `8191` | default | Cloudflare bypass |
 | slskd | slskd | `5030` (host) | host | Soulseek daemon |
 | Soularr | soularr | — | default | Lidarr → slskd bridge |
-| qBittorrent | qbittorrent | `8080` | default | Download client |
+| Download client | (redacted) | `8080` | default | Download client |
 
 **All *arr apps use:** `PUID=501`, `PGID=20`, `TZ=America/Chicago`, `platform: linux/arm64`
 
@@ -113,7 +113,7 @@ The iamfaulty-homelab is a 40+ container media/automation stack running on a Mac
 
 | Service | Container | Port | Notes |
 |---------|-----------|------|-------|
-| cloudflared | cloudflared | — | Docker container, tunnel ID `3727ea81-b7a2-484c-8de9-3e55ab1a050c` |
+| cloudflared | cloudflared | — | Docker container, tunnel ID `<redacted>` |
 | stack-dashboard | stack-dashboard | `3336` | `~/homelab-data/stack-dashboard/docker-compose.yml` |
 | Hermes Agent | hermes, hermes-dashboard | — | `~/.hermes/hermes-agent/docker-compose.yml`, `network_mode: host` |
 
@@ -153,7 +153,7 @@ The README correctly identifies that the live stack is assembled from 4 independ
 
 | Source | Location | What it runs | Trust Level |
 |--------|----------|--------------|-------------|
-| **1. Arr Stack** | `~/homelab-data/arr-stack/docker-compose.yml` | qBit, Gluetun (not in live), Radarr, Sonarr, Lidarr, Mylar3, Prowlarr, Readarr, Flaresolverr, Bookbounty, Huntorr, Soularr, slskd, metube, jellyseerr | **LIVE** |
+| **1. Arr Stack** | `~/homelab-data/arr-stack/docker-compose.yml` | Download client, Radarr, Sonarr, Lidarr, Mylar3, Prowlarr, Readarr, Flaresolverr, Bookbounty, Huntorr, Soularr, slskd, metube, jellyseerr | **LIVE** |
 | **2. Apps / Infra** | `/Volumes/homelab/compose/` (NAS Gitea repo) | Jellyfin, NPM, Portainer, Gitea, Planka, Homepage, Beszel, Duplicati, Watchtower, daily-brief, Dozzle, dashboard, board, portfolio, AnythingLLM | **LIVE** |
 | **3. Agent Stack** | `~/homelab-agent-stack/docker-compose.yml` | Caddy (reverse proxy), sync-server | **LIVE** |
 | **4. Truth Site** | `~/homelab-data/truth-site/docker-compose.yml` | Static site container | **LIVE** |
@@ -167,7 +167,7 @@ The README correctly identifies that the live stack is assembled from 4 independ
 | **12. Hermes** | `~/.hermes/hermes-agent/docker-compose.yml` | hermes gateway, dashboard | **LIVE** |
 | **13. us-app** | `~/homelab-data/us-app/docker-compose.yml` | us-app | **REMOVED** (container deleted) |
 | **14. Archived apps** | `~/homelab-data/_ARCHIVED_2026-05-26/apps-docker-compose.yml` | Legacy monolithic compose | **ARCHIVED** |
-| **15. Kimi OpenClaw** | `~/.kimi_openclaw/workspace/docker-compose.yml` | Gluetun + arr stack (alt config) | **STALE/EXPERIMENT** |
+| **15. Kimi OpenClaw** | `~/.kimi_openclaw/workspace/docker-compose.yml` | VPN + arr stack (alt config) | **STALE/EXPERIMENT** |
 | **16. Downloads arr** | `~/Downloads/Kimi_Agent_Optimizing _arr Stack Configurations/docker-compose.yml` | Another arr stack variant | **STALE/EXPERIMENT** |
 
 **Critical finding:** There are **16+ different compose files** for what should be a single coherent stack. This is a major operational risk.
@@ -184,7 +184,7 @@ The README correctly identifies that the live stack is assembled from 4 independ
 **Evidence:**
 - `~/homelab-data/arr-stack/docker-compose.yml` = live arr stack
 - `iamfaulty-homelab/_archive_stale_compose/arr/docker-compose.yml` = stale archive (missing flaresolverr, readarr, bookbounty, huntorr)
-- `~/.kimi_openclaw/workspace/docker-compose.yml` = experimental gluetun variant with PUID=1000
+- `~/.kimi_openclaw/workspace/docker-compose.yml` = experimental VPN-gateway variant with PUID=1000
 - `~/Downloads/Kimi_Agent_Optimizing _arr Stack Configurations/docker-compose.yml` = another variant with NFS volume
 
 #### ISSUE-002: Port Conflicts
@@ -197,10 +197,10 @@ The README correctly identifies that the live stack is assembled from 4 independ
 | `3334` | board-dashboard (127.0.0.1) | links-dashboard (0.0.0.0) | **YES** — links-dashboard binds 0.0.0.0:3334 |
 | `8091` | agent-network | — | Caddy has commented route |
 
-#### ISSUE-003: Missing Gluetun VPN
+#### ISSUE-003: Missing VPN Kill Switch
 **Severity:** HIGH
-**Impact:** The live arr stack does NOT include Gluetun. qBittorrent runs on bridge network with `127.0.0.1:8080` binding. The reference compose in `~/.kimi_openclaw/workspace/docker-compose.yml` has a full Gluetun setup with WireGuard credentials hardcoded.
-**Evidence:** Live `arr-stack/docker-compose.yml` has no Gluetun service. qBittorrent uses `networks: - default` not `network_mode: service:gluetun`.
+**Impact:** The live arr stack does NOT include a VPN gateway container. The download client runs on bridge network with `127.0.0.1:8080` binding. A reference compose in `~/.kimi_openclaw/workspace/docker-compose.yml` has a full VPN kill-switch setup with WireGuard credentials hardcoded (key redacted from this doc; rotation recommended).
+**Evidence:** Live `arr-stack/docker-compose.yml` has no VPN gateway service. The download client uses `networks: - default` not `network_mode: service:<vpn-gateway>`.
 **Question:** Is the VPN kill switch intentionally removed, or is this a config drift issue?
 
 #### ISSUE-004: Inconsistent Port Bindings
@@ -292,9 +292,9 @@ The README correctly identifies that the live stack is assembled from 4 independ
 | slskd default password | FIXED | Changed from `changeme123` |
 | Cloudflared temp mount broken | FIXED | Recreated with proper directory mount |
 | `apps-docker-compose.yml` insecure | ARCHIVED | Hardcoded `planka-secret-key-change-me`, `POSTGRES_HOST_AUTH_METHOD=trust`, no localhost bindings |
-| WireGuard private key in compose | **EXPOSED** | `~/.kimi_openclaw/workspace/docker-compose.yml` contains `WIREGUARD_PRIVATE_KEY=kwnKtJ5OlFrymtKThJtUOT6VO0PiewKWUj9N9s6xW4s=` |
+| WireGuard private key in compose | **EXPOSED** | `~/.kimi_openclaw/workspace/docker-compose.yml` contains `WIREGUARD_PRIVATE_KEY=<redacted>` |
 
-**CRITICAL:** The WireGuard private key in `~/.kimi_openclaw/workspace/docker-compose.yml` is a live credential. Even though this is an experimental file, the key should be rotated if it was ever used.
+**CRITICAL:** The WireGuard private key in `~/.kimi_openclaw/workspace/docker-compose.yml` is a live credential. Even though this is an experimental file, the key should be rotated if it was ever used. (Key value redacted from this document.)
 
 ---
 
@@ -312,7 +312,7 @@ iamfaulty-homelab/
 │   ├── 01-infra/                 # portainer, npm, watchtower, duplicati
 │   ├── 02-monitoring/            # beszel, beszel-agent, dozzle
 │   ├── 03-media/                 # jellyfin, jellyseerr, metube
-│   ├── 04-arr/                   # qbittorrent, prowlarr, sonarr, radarr, lidarr, mylar3, readarr, flaresolverr, bookbounty, huntorr, slskd, soularr
+│   ├── 04-arr/                   # download-client, prowlarr, sonarr, radarr, lidarr, mylar3, readarr, flaresolverr, bookbounty, huntorr, slskd, soularr
 │   ├── 05-apps/                  # gitea, planka, homepage, daily-brief, dashboard, board-dashboard, portfolio
 │   ├── 06-agent/                 # caddy, sync-server
 │   ├── 07-orchestrator/          # faulty-orchestrator, discord-bot, telegram-bot
@@ -345,18 +345,18 @@ docker network rm arr_default board_default duplicati_default gitea_default jell
 ```
 
 #### 8.1.4 Rotate Exposed WireGuard Key
-- [ ] If the key in `~/.kimi_openclaw/workspace/docker-compose.yml` was ever used, rotate it in NordVPN
+- [ ] If the key in `~/.kimi_openclaw/workspace/docker-compose.yml` was ever used, rotate it with the VPN provider
 - [ ] Delete or redact the file
 
 ### Phase 2: Short Term (Next 2 Weeks)
 
 #### 8.2.1 Decide on VPN Strategy
 **Options:**
-- **A:** Add Gluetun back to the arr stack (use the Kimi OpenClaw config as reference but with env vars)
-- **B:** Keep qBittorrent on bridge without VPN (current state) — document why
+- **A:** Add a VPN kill-switch gateway back to the arr stack (use the Kimi OpenClaw config as reference but with env vars)
+- **B:** Keep the download client on bridge without VPN (current state) — document why
 - **C:** Use host-level VPN (Tailscale already running)
 
-**Recommendation:** Option A with proper env-based secrets. The `network_mode: service:gluetun` pattern is well-documented and provides a true kill switch.
+**Recommendation:** Option A with proper env-based secrets. The `network_mode: service:<vpn-gateway>` pattern is well-documented and provides a true kill switch.
 
 #### 8.2.2 Standardize Healthchecks
 Add healthchecks to all services that support them:
@@ -394,7 +394,7 @@ The Caddyfile in `reference/Caddyfile` has some routes already commented. Verify
 Use Docker Compose profiles to group services:
 ```yaml
 services:
-  qbittorrent:
+  download-client:
     profiles: ["arr", "media"]
   jellyfin:
     profiles: ["media"]
@@ -434,12 +434,11 @@ The AGENT_TRAINING.md has a 10-item verification checklist. Implement it:
 ```
 Internet
     |
-Cloudflare Tunnel (cloudflared) — tunnel ID 3727ea81-b7a2-484c-8de9-3e55ab1a050c
+Cloudflare Tunnel (cloudflared) — tunnel ID `<redacted>`
     |
 NPM (0.0.0.0:80/443)  ←—— OR ——→  Caddy (127.0.0.1:80/443) [internal only]
     |                                    |
     |                                    ├── jellyfin.iamfaulty.com → host.docker.internal:8096
-    |                                    ├── qbit.iamfaulty.com → host.docker.internal:8080
     |                                    ├── sonarr.iamfaulty.com → host.docker.internal:8989
     |                                    ├── radarr.iamfaulty.com → host.docker.internal:7878
     |                                    ├── lidarr.iamfaulty.com → host.docker.internal:8686
@@ -550,7 +549,7 @@ Local SSD (~/homelab-data)
 | `~/homelab-data/pi3-dns-vpn/docker-compose.yml` | blocky, beszel-agent | **Pi3 only** |
 | `~/homelab-data/us-app/docker-compose.yml` | us-app | **REMOVED** |
 | `~/.hermes/hermes-agent/docker-compose.yml` | hermes gateway, dashboard | **LIVE** |
-| `~/.kimi_openclaw/workspace/docker-compose.yml` | gluetun + arr (alt) | **STALE/EXPERIMENT** |
+| `~/.kimi_openclaw/workspace/docker-compose.yml` | VPN + arr (alt) | **STALE/EXPERIMENT** |
 | `~/Downloads/Kimi_Agent_Optimizing _arr Stack Configurations/docker-compose.yml` | arr (alt) | **STALE/EXPERIMENT** |
 
 ---
@@ -563,7 +562,7 @@ Local SSD (~/homelab-data)
 | P0 | Fix port conflict: links-dashboard vs board-dashboard | Low | High |
 | P0 | Rotate exposed WireGuard key | Low | Critical |
 | P1 | Clean orphaned Docker networks | Low | Medium |
-| P1 | Decide on VPN strategy (Gluetun yes/no) | Medium | High |
+| P1 | Decide on VPN strategy (kill switch yes/no) | Medium | High |
 | P1 | Update `ops/cloudflared-config.yml` to match live setup | Low | Medium |
 | P2 | Add healthchecks to all services | Medium | Medium |
 | P2 | Add `.env.example` to all stacks | Low | Medium |

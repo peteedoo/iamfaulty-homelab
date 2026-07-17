@@ -7,10 +7,7 @@
 		reverse_proxy host.docker.internal:8096
 	}
 
-	@qbit host qbit.iamfaulty.com
-	handle @qbit {
-		reverse_proxy host.docker.internal:8080
-	}
+	# download-client route intentionally omitted from public copy
 
 	@sonarr host sonarr.iamfaulty.com
 	handle @sonarr {

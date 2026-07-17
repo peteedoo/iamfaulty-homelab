@@ -18,7 +18,6 @@ Cloudflare Tunnel (cloudflared)
 Edge Proxy (Nginx Proxy Manager / Caddy)
     |--- wiki.*         (Cloudflare Pages / static site)
     |--- jellyfin.*     (media server)
-    |--- qbit.*         (torrent client)
     |--- sonarr.*       (TV management)
     |--- radarr.*       (movie management)
     |--- lidarr.*       (music management)
@@ -29,7 +28,7 @@ Edge Proxy (Nginx Proxy Manager / Caddy)
 Docker Desktop (macOS / Linux host)
     |
     +-- Compose Stack: arr-services
-    |   +-- qBittorrent     (torrent client)
+    |   +-- download-client (media download client)
     |   +-- Prowlarr        (indexer management)
     |   +-- Sonarr          (TV PVR)
     |   +-- Radarr          (movie PVR)
@@ -81,7 +80,7 @@ NAS (SMB mount at /Volumes/homelab)
    - Logs showing specific errors?
 
 2. Live inspection revealed:
-   - qBittorrent container running but Web UI not responding
+   - Download client container running but Web UI not responding
    - Lidarr logs: `No available indexers`
    - Lidarr DB corruption error on startup
    - All indexers disabled in Lidarr
@@ -89,10 +88,10 @@ NAS (SMB mount at /Volumes/homelab)
 
 ### Phase 2: Root Cause Analysis
 
-**Issue 1: qBittorrent Crash Loop**
+**Issue 1: Download Client Crash Loop**
 - **Symptom:** Container running, port 8080 not listening, rapid restart in logs
 - **Cause:** Stale `lockfile` + `ipc-socket` from previous container instance
-- **Mechanism:** qBittorrent checks for lockfile on startup; finds stale one; exits immediately
+- **Mechanism:** The download client checks for lockfile on startup; finds stale one; exits immediately
 - **Trigger:** Container recreation without proper cleanup of Unix domain sockets
 
 **Issue 2: Lidarr Database Corruption**
@@ -102,8 +101,8 @@ NAS (SMB mount at /Volumes/homelab)
 - **Lesson:** Never run `sqlite3 ... "UPDATE ..."` on a live application database
 
 **Issue 3: Network Isolation**
-- **Symptom:** Lidarr cannot reach qBittorrent despite both being "on the same machine"
-- **Cause:** qBittorrent used `network_mode: host`; Lidarr on `default` bridge network
+- **Symptom:** Lidarr cannot reach the download client despite both being "on the same machine"
+- **Cause:** The download client used `network_mode: host`; Lidarr on `default` bridge network
 - **Mechanism:** `host` network containers share host stack; bridge containers get isolated IPs
 - **Lesson:** `localhost` inside a bridge container means the container itself, not the host
 
@@ -126,11 +125,11 @@ NAS (SMB mount at /Volumes/homelab)
 
 | Step | Action | Verification |
 |------|--------|-------------|
-| 1 | Stop qBittorrent, remove stale lockfile/ipc-socket | `netstat -tlnp \| grep 8080` shows listener |
+| 1 | Stop the download client, remove stale lockfile/ipc-socket | `netstat -tlnp \| grep 8080` shows listener |
 | 2 | Restore Lidarr DB from scheduled backup (May 17) | `PRAGMA integrity_check;` returns `ok` |
-| 3 | Change qBittorrent from `host` to bridge + port mapping | Container reachable by name from Lidarr |
+| 3 | Change the download client from `host` to bridge + port mapping | Container reachable by name from Lidarr |
 | 4 | Align Lidarr PUID to 501 | Matches all other services |
-| 5 | Update Lidarr download client host: `localhost` → `qbittorrent` | API test returns `isValid: True` |
+| 5 | Update Lidarr download client host: `localhost` → `download-client` | API test returns `isValid: True` |
 | 6 | Enable all indexers in DB (`EnableRss=1`, `EnableAutomaticSearch=1`, etc.) | API shows `enableRss: true` for all |
 | 7 | Jellyfin: mount NAS metadata dir at `/config/metadata` | Metadata directory grows on NAS during scan |
 | 8 | Force-recreate affected containers | `docker compose up -d --force-recreate` |
@@ -241,14 +240,14 @@ When multiple issues exist simultaneously:
 
 ### Scenario A: "My *arr app can't reach the download client"
 
-**Setup:** qBittorrent on `network_mode: host`, Sonarr on `default` bridge.
+**Setup:** Download client on `network_mode: host`, Sonarr on `default` bridge.
 
 **Agent tasks:**
 1. Verify both containers are running (`docker ps`)
-2. Check if qBittorrent is listening (`docker exec qbittorrent netstat -tlnp`)
-3. Test reachability from Sonarr (`docker exec sonarr wget qbittorrent:8080`)
+2. Check if the download client is listening (`docker exec download-client netstat -tlnp`)
+3. Test reachability from Sonarr (`docker exec sonarr wget download-client:8080`)
 4. Identify network mismatch
-5. Propose fix: either add qBittorrent to bridge network, or use host IP
+5. Propose fix: either add the download client to the bridge network, or use host IP
 
 **Key concept:** `network_mode: host` containers do NOT participate in Docker's internal DNS. Bridge containers cannot reach them by container name.
 
@@ -393,9 +392,9 @@ EOF
 
 ```yaml
 services:
-  qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:latest
-    container_name: qbittorrent
+  download-client:
+    image: <download-client-image>  # omitted in public copy
+    container_name: download-client
     platform: linux/arm64
     restart: unless-stopped
     # AVOID: network_mode: host (breaks inter-container DNS)
@@ -407,7 +406,7 @@ services:
       - TZ=America/Chicago
       - WEBUI_PORT=8080
     volumes:
-      - ./qbittorrent:/config
+      - ./download-client:/config
       - /nas/media:/data
     networks:
       - default
@@ -418,7 +417,7 @@ services:
     platform: linux/arm64
     restart: unless-stopped
     environment:
-      - PUID=501        # <-- MATCH QBittorrent
+      - PUID=501        # <-- MATCH the download client
       - PGID=20
       - TZ=America/Chicago
     ports:
@@ -501,7 +500,7 @@ docker run -d \
 
 ### 9.3 The Fix Often Creates New Problems
 
-- Changing qBittorrent network mode fixed Lidarr connectivity but broke cloudflared routing
+- Changing the download client's network mode fixed Lidarr connectivity but broke cloudflared routing
 - Moving metadata to NAS fixed storage but triggered virtiofs caching issues
 - Restoring DB from backup fixed corruption but restored old disabled states
 

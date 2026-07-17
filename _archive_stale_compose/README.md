@@ -7,7 +7,7 @@
 ## Differences from live stack
 - Missing: flaresolverr, readarr, bookbounty, huntorr
 - Wrong PUID (501 vs 1000)
-- Wrong qbittorrent networking (host vs bridge)
+- Wrong download-client networking (host vs bridge)
 - Missing Radarr `ulimits.nofile` fix
 
 ## Source of truth
