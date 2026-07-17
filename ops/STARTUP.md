@@ -4,11 +4,11 @@
 
 | Host | What starts here |
 |------|------------------|
-| **minifw** (`192.168.68.64`) | Arr, jellyfin, homepage, gitea, apps, caddy + sync-server |
-| **Pi 5** | Edge cluster (blocky DNS last, Home Assistant, NetAlertX, …) |
-| **iamfaulty-mini** | OpenClaw, iMessage bridge, inference worker only — then **OrbStack quit** |
+| **firewall-vm** (`<lan-ip:firewall-vm>`) | Arr, jellyfin, homepage, gitea, apps, caddy + sync-server |
+| **edge SBC** | Edge cluster (blocky DNS last, Home Assistant, NetAlertX, …) |
+| **arm-mini** | OpenClaw, iMessage bridge, inference worker only — then **OrbStack quit** |
 
-NAS compose: `/mnt/homelab/compose/` on minifw (NFS to ILLMATIC).  
+NAS compose: `/mnt/homelab/compose/` on firewall-vm (NFS to NAS).  
 Migration runbooks: [`migration-2026-07-14/README.md`](migration-2026-07-14/README.md).
 
 ---
@@ -30,7 +30,7 @@ After OrbStack is quit permanently, **disable** the LaunchAgent.
 
 ---
 
-## minifw bring-up (manual / systemd)
+## firewall-vm bring-up (manual / systemd)
 
 ```bash
 # Shared proxy network
@@ -47,12 +47,12 @@ Mac→x86 reminders: strip `platform: linux/arm64`; UID `1000:1000` + `chown`.
 
 ---
 
-## Pi 5 edge
+## edge SBC edge
 
 ```bash
 cd /opt/homelab
 docker compose --profile apps up -d    # HA, kuma, speedtest, netalertx
-# blocky LAST — see migration-2026-07-14/edge-pi5/MIGRATE.md
+# blocky LAST — see migration-2026-07-14/edge-sbc/MIGRATE.md
 docker compose --profile dns up -d
 ```
 
@@ -64,8 +64,8 @@ docker compose --profile dns up -d
 # Mini — should be survivors only before OrbStack quit
 docker ps --format "table {{.Names}}\t{{.Status}}" | sort
 
-# minifw
-ssh minifw 'docker ps --format "table {{.Names}}\t{{.Status}}" | sort'
+# firewall-vm
+ssh firewall-vm 'docker ps --format "table {{.Names}}\t{{.Status}}" | sort'
 
 cat /tmp/stack-up.log
 ```
@@ -74,7 +74,7 @@ cat /tmp/stack-up.log
 
 ## Common failure scenarios
 
-### exec format error after a Mac→minifw move
+### exec format error after a Mac→firewall-vm move
 
 `platform: linux/arm64` left in compose. Strip it, `docker compose pull`, recreate.
 
@@ -98,5 +98,5 @@ blocky moved too early or DHCP flipped before Pi dig worked. Keep old resolver u
 |------|---------|
 | `ops/stack-up.sh` | Mini survivors only |
 | `ops/migration-2026-07-14/` | Remaining cutover runbooks |
-| `reference/target-compose/` | Intended compose for homepage / edge / minifw proxy |
-| `/mnt/homelab/compose/` | Live compose on NAS (via minifw NFS) |
+| `reference/target-compose/` | Intended compose for homepage / edge / firewall-vm proxy |
+| `/mnt/homelab/compose/` | Live compose on NAS (via firewall-vm NFS) |

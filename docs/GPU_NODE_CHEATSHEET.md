@@ -1,15 +1,15 @@
-# AskJeevesAI Cheatsheet
+# gpu-node Cheatsheet
 
-Quick commands for the AMD LLM box (`AskJeevesAI`, usually `192.168.68.55`). Full notes: [`ASKJEEVESAI.md`](ASKJEEVESAI.md).
+Quick commands for the AMD LLM box (`gpu-node`, usually `<lan-ip:gpu-node>`). Full notes: [`GPU_NODE.md`](GPU_NODE.md).
 
 ## SSH
 
 ```bash
-# from iamfaulty-mini
-ssh peteedoo@192.168.68.55
+# from arm-mini
+ssh peteedoo@<lan-ip:gpu-node>
 
 # if host key changed after reinstall
-ssh-keygen -R 192.168.68.55
+ssh-keygen -R <lan-ip:gpu-node>
 ```
 
 ## Health checks
@@ -19,7 +19,7 @@ hostname -I
 free -h
 swapon --show
 groups                    # need: render video
-rocminfo | grep -E "Marketing Name|gfx1200"
+rocminfo | grep -E "Marketing Name|gfx12xx"
 rocm-smi
 ollama --version
 ollama list
@@ -55,14 +55,14 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl restart ollama
 
-# from Mac mini
-curl http://192.168.68.55:11434/api/tags
+# from ARM mini PC
+curl http://<lan-ip:gpu-node>:11434/api/tags
 ```
 
 Firewall if needed:
 
 ```bash
-sudo ufw allow from 192.168.68.0/24 to any port 11434 proto tcp
+sudo ufw allow from <lan-subnet> to any port 11434 proto tcp
 sudo ufw reload
 ```
 
@@ -70,7 +70,7 @@ sudo ufw reload
 
 ```bash
 cd ~/local-agent && source .venv/bin/activate
-# script: ops/askjeevesai/organize_agent.py in this repo
+# script: ops/gpu-node/organize_agent.py in this repo
 python organize_agent.py
 find ~/Organizer -type f | sort
 ```
@@ -83,10 +83,10 @@ Two patterns:
 
 | Pattern | Where OpenClaw runs | Ollama URL |
 |---------|---------------------|------------|
-| A — local on AskJeevesAI | AskJeevesAI | `http://127.0.0.1:11434` |
-| B — existing hub on mini/agent-stack | Mac mini / openclaw-hub | `http://192.168.68.55:11434` |
+| A — local on gpu-node | gpu-node | `http://127.0.0.1:11434` |
+| B — existing hub on mini/agent-stack | ARM mini PC / openclaw-hub | `http://<lan-ip:gpu-node>:11434` |
 
-### Pattern A (on AskJeevesAI)
+### Pattern A (on gpu-node)
 
 ```bash
 # Node 22+ recommended
@@ -104,13 +104,13 @@ openclaw models set ollama/qwen2.5:7b-instruct-q4_K_M
 
 Gateway UI is typically `http://127.0.0.1:18789`.
 
-### Pattern B (point existing OpenClaw at AskJeevesAI)
+### Pattern B (point existing OpenClaw at gpu-node)
 
 1. Expose Ollama on LAN (commands above).
 2. In OpenClaw config / onboard, set Ollama `baseUrl` to:
 
 ```text
-http://192.168.68.55:11434
+http://<lan-ip:gpu-node>:11434
 ```
 
 **Do not** append `/v1` — that breaks tool calling.
@@ -120,12 +120,12 @@ Non-interactive example:
 ```bash
 openclaw onboard --non-interactive \
   --auth-choice ollama \
-  --custom-base-url "http://192.168.68.55:11434" \
+  --custom-base-url "http://<lan-ip:gpu-node>:11434" \
   --custom-model-id "qwen2.5:7b-instruct-q4_K_M" \
   --accept-risk
 ```
 
-Your homelab already has `openclaw.iamfaulty.com` / hub on port `18789` (see `docs/API_REFERENCE.md`). Prefer fixing that hub to use AskJeevesAI as the model backend rather than running two conflicting Telegram bots.
+Your homelab already has `openclaw.iamfaulty.com` / hub on port `18789` (see `docs/API_REFERENCE.md`). Prefer fixing that hub to use gpu-node as the model backend rather than running two conflicting Telegram bots.
 
 ## Repos / projects worth cloning
 

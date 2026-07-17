@@ -1,4 +1,4 @@
-# Target homepage compose — minifw (x86_64)
+# Target homepage compose — firewall-vm (x86_64)
 
 # Copy to: /mnt/homelab/compose/homepage/docker-compose.yml
 # Then: sudo chown -R 1000:1000 ./config && docker compose pull && up -d

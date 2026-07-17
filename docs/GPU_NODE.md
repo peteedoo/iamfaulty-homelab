@@ -1,17 +1,17 @@
-# AskJeevesAI — Local LLM / ROCm Compute Node
+# gpu-node — Local LLM / ROCm Compute Node
 
-AMD desktop used for local inference and agent experiments. Complements AnythingLLM / Forge on the Mac mini.
+AMD desktop used for local inference and agent experiments. Complements AnythingLLM / Forge on the ARM mini PC.
 
 ## Hardware
 
 | Component | Spec |
 |-----------|------|
-| Hostname | `AskJeevesAI` |
+| Hostname | `gpu-node` |
 | User | `peteedoo` |
-| LAN IP | `192.168.68.55` (DHCP; confirm with `hostname -I`) |
-| CPU | AMD Ryzen 5 7500X3D |
-| Motherboard | Gigabyte B850M-C |
-| GPU | PowerColor Radeon RX 9060 XT 16GB (`gfx1200`) |
+| LAN IP | `<lan-ip:gpu-node>` (DHCP; confirm with `hostname -I`) |
+| CPU | AMD Ryzen 5 (desktop class) |
+| Motherboard | mATX AM5 board |
+| GPU | AMD Radeon RX (RDNA 4), 16GB |
 | RAM | 16GB DDR5 (run EXPO = **Auto** for stability) |
 | OS disk | ~1TB NVMe (`nvme0n1`) |
 | Data disks | SATA `sda` ~1.4TB, `sdb` ~3.6TB (not yet standardized) |
@@ -23,7 +23,7 @@ AMD desktop used for local inference and agent experiments. Complements Anything
 - User in `render` + `video` groups
 - Ollama with GPU offload (VRAM occupancy rises when models load)
 - zram recommended (`zram-tools`, ~50% RAM, `zstd`)
-- OpenSSH enabled for admin from `iamfaulty-mini`
+- OpenSSH enabled for admin from `arm-mini`
 
 ### Verify GPU
 
@@ -33,18 +33,18 @@ rocminfo | grep -E "Marketing Name|Name:|Device Type"
 rocm-smi
 ```
 
-Expected: `AMD Radeon RX 9060 XT` / `gfx1200` as a GPU agent.
+Expected: `AMD Radeon RX (RDNA 4)` / `gfx12xx` as a GPU agent.
 
-### SSH from Mac mini
+### SSH from ARM mini PC
 
 ```bash
-ssh peteedoo@192.168.68.55
+ssh peteedoo@<lan-ip:gpu-node>
 ```
 
 If host key changed after reinstall:
 
 ```bash
-ssh-keygen -R 192.168.68.55
+ssh-keygen -R <lan-ip:gpu-node>
 ```
 
 ## Models that fit this box
@@ -71,14 +71,14 @@ watch -n 1 rocm-smi
 
 ## Cheatsheet
 
-Daily commands, OpenClaw wiring, and repo list: [`ASKJEEVESAI_CHEATSHEET.md`](ASKJEEVESAI_CHEATSHEET.md).
+Daily commands, OpenClaw wiring, and repo list: [`GPU_NODE_CHEATSHEET.md`](GPU_NODE_CHEATSHEET.md).
 
 ## OpenClaw
 
 Yes — OpenClaw can use this host’s Ollama (native `/api/chat`, not `/v1`).
 
-- Run OpenClaw **on AskJeevesAI** with `http://127.0.0.1:11434`, or
-- Point existing `openclaw-hub` / mini OpenClaw at `http://192.168.68.55:11434` after binding Ollama to `0.0.0.0`
+- Run OpenClaw **on gpu-node** with `http://127.0.0.1:11434`, or
+- Point existing `openclaw-hub` / mini OpenClaw at `http://<lan-ip:gpu-node>:11434` after binding Ollama to `0.0.0.0`
 
 See the cheatsheet for exact onboard commands. Avoid running two OpenClaw instances against the same Telegram bot.
 
@@ -86,17 +86,17 @@ See the cheatsheet for exact onboard commands. Avoid running two OpenClaw instan
 
 Demo CodeAgent (smolagents + Ollama) that sorts files under `~/Organizer`.
 
-Script: [`ops/askjeevesai/organize_agent.py`](../ops/askjeevesai/organize_agent.py)
+Script: [`ops/gpu-node/organize_agent.py`](../ops/gpu-node/organize_agent.py)
 
 ```bash
-# on AskJeevesAI
+# on gpu-node
 sudo apt install -y python3.12-venv
 mkdir -p ~/local-agent && cd ~/local-agent
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -U pip 'smolagents[litellm]'
 
-# copy script from this repo, or recreate from ops/askjeevesai/organize_agent.py
+# copy script from this repo, or recreate from ops/gpu-node/organize_agent.py
 python organize_agent.py
 ```
 

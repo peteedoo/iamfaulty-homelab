@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Local file-organizer agent for AskJeevesAI (smolagents + Ollama).
+"""Local file-organizer agent for gpu-node (smolagents + Ollama).
 
 Sandbox: only ~/Organizer/inbox and ~/Organizer/sorted.
 Requires: ollama with qwen2.5:7b-instruct-q4_K_M (or edit model_id).

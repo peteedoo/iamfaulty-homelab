@@ -1,6 +1,6 @@
 #!/bin/bash
-# Bring up survivor containers on iamfaulty-mini after OrbStack migration.
-# Most stacks now run on minifw (192.168.68.64) or Pi 5.
+# Bring up survivor containers on arm-mini after OrbStack migration.
+# Most stacks now run on firewall-vm (<lan-ip:firewall-vm>) or edge SBC.
 # Called by ai.iamfaulty.homelab-boot LaunchAgent on login (if still used).
 #
 # Expected survivors only: iMessage bridge, OpenClaw, inference worker.

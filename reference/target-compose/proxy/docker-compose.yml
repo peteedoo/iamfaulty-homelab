@@ -1,6 +1,6 @@
-# Reverse proxy + sync — minifw after split from OpenClaw agent stack
+# Reverse proxy + sync — firewall-vm after split from OpenClaw agent stack
 # Copy sync-server/ build context + .env (SYNC_TOKEN) from the mini project.
-# Do NOT include OpenClaw here — OpenClaw stays on iamfaulty-mini.
+# Do NOT include OpenClaw here — OpenClaw stays on arm-mini.
 
 services:
   sync-server:

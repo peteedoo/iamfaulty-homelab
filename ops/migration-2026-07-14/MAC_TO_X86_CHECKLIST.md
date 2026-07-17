@@ -1,6 +1,6 @@
-# Mac → minifw (x86) checklist
+# Mac → firewall-vm (x86) checklist
 
-Print this. Tick every box on **every** Mac→minifw service move.
+Print this. Tick every box on **every** Mac→firewall-vm service move.
 
 ## Before `rsync` / pull
 
@@ -9,13 +9,13 @@ Print this. Tick every box on **every** Mac→minifw service move.
 - [ ] Search for `501`, `USER_UID`, `PUID`, `PGID`, `USER_GID`, `user:`
   - Replace macOS IDs (`501` / `20`) with Linux (`1000` / `1000`)
   - Prefer env vars `PUID=1000` `PGID=1000` or `user: "1000:1000"` matching the image docs
-- [ ] Rewrite volume host paths: `/Users/...` and `/Volumes/homelab/...` → minifw paths (`/mnt/homelab/...`, `/opt/homelab-data/...`, etc.)
+- [ ] Rewrite volume host paths: `/Users/...` and `/Volumes/homelab/...` → firewall-vm paths (`/mnt/homelab/...`, `/opt/homelab-data/...`, etc.)
 - [ ] Drop macOS-only mount tricks (`osascript`, OrbStack socket paths) — use Linux docker socket `/var/run/docker.sock`
 
 ## Data copy
 
 ```bash
-# On minifw, as root (or with sudo) — preserve + force Linux ownership
+# On firewall-vm, as root (or with sudo) — preserve + force Linux ownership
 sudo rsync -aHAX --info=progress2 \
   --chown=1000:1000 \
   /path/from/ \
@@ -44,7 +44,7 @@ docker compose logs --tail=80
 |---------|-------|-----|
 | `exec format error` | arm64 image / `platform: linux/arm64` on x86 | Strip platform, `compose pull --policy always`, recreate |
 | `Permission denied` on config/DB | UID 501 leftovers | Fix yaml + `chown -R 1000:1000` data dir |
-| Image pulls linux/arm64 anyway | digest / cache from mini | `docker compose pull` on **minifw**; prune old images |
+| Image pulls linux/arm64 anyway | digest / cache from arm-mini | `docker compose pull` on **firewall-vm**; prune old images |
 
 ## After cutover on mini
 

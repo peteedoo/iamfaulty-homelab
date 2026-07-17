@@ -1,81 +1,78 @@
-# Caddy on minifw — rewrite host.docker.internal → LAN IPs after Mac strip.
+# Caddy on firewall-vm — rewrite host.docker.internal → LAN IPs after Mac strip.
 # Replace MINI_LAN_IP and PI_LAN_IP before deploy.
-# Services already on minifw use 127.0.0.1 via host-gateway OR the published port on 192.168.68.64.
+# Services already on firewall-vm use 127.0.0.1 via host-gateway OR the published port on <lan-ip:firewall-vm>.
 
 :80 {
 	@jellyfin host jellyfin.iamfaulty.com
 	handle @jellyfin {
-		reverse_proxy 192.168.68.64:8096
+		reverse_proxy <lan-ip:firewall-vm>:8096
 	}
 
-	@qbit host qbit.iamfaulty.com
-	handle @qbit {
-		reverse_proxy 192.168.68.64:8080
-	}
+	# download-client route intentionally omitted from public copy
 
 	@sonarr host sonarr.iamfaulty.com
 	handle @sonarr {
-		reverse_proxy 192.168.68.64:8989
+		reverse_proxy <lan-ip:firewall-vm>:8989
 	}
 
 	@radarr host radarr.iamfaulty.com
 	handle @radarr {
-		reverse_proxy 192.168.68.64:7878
+		reverse_proxy <lan-ip:firewall-vm>:7878
 	}
 
 	@lidarr host lidarr.iamfaulty.com
 	handle @lidarr {
-		reverse_proxy 192.168.68.64:8686
+		reverse_proxy <lan-ip:firewall-vm>:8686
 	}
 
 	@prowlarr host prowlarr.iamfaulty.com
 	handle @prowlarr {
-		reverse_proxy 192.168.68.64:9696
+		reverse_proxy <lan-ip:firewall-vm>:9696
 	}
 
 	@jellyseerr host jellyseerr.iamfaulty.com
 	handle @jellyseerr {
-		reverse_proxy 192.168.68.64:5055
+		reverse_proxy <lan-ip:firewall-vm>:5055
 	}
 
 	@mylar host mylar.iamfaulty.com
 	handle @mylar {
-		reverse_proxy 192.168.68.64:8090
+		reverse_proxy <lan-ip:firewall-vm>:8090
 	}
 
 	@readarr host readarr.iamfaulty.com
 	handle @readarr {
-		reverse_proxy 192.168.68.64:8787
+		reverse_proxy <lan-ip:firewall-vm>:8787
 	}
 
 	@metube host metube.iamfaulty.com
 	handle @metube {
-		reverse_proxy 192.168.68.64:8081
+		reverse_proxy <lan-ip:firewall-vm>:8081
 	}
 
 	@slskd host slskd.iamfaulty.com
 	handle @slskd {
-		reverse_proxy 192.168.68.64:5030
+		reverse_proxy <lan-ip:firewall-vm>:5030
 	}
 
 	@homepage host homepage.iamfaulty.com
 	handle @homepage {
-		reverse_proxy 192.168.68.64:3005
+		reverse_proxy <lan-ip:firewall-vm>:3005
 	}
 
 	@planka host planka.iamfaulty.com
 	handle @planka {
-		reverse_proxy 192.168.68.64:3333
+		reverse_proxy <lan-ip:firewall-vm>:3333
 	}
 
 	@beszel host beszel.iamfaulty.com
 	handle @beszel {
-		reverse_proxy 192.168.68.64:8089
+		reverse_proxy <lan-ip:firewall-vm>:8089
 	}
 
 	@git host git.iamfaulty.com
 	handle @git {
-		reverse_proxy 192.168.68.64:3000
+		reverse_proxy <lan-ip:firewall-vm>:3000
 	}
 
 	@sync host sync.iamfaulty.com
@@ -83,7 +80,7 @@
 		reverse_proxy sync-server:3001
 	}
 
-	# OpenClaw stays on the Mac mini — MUST use mini LAN IP, not host.docker.internal
+	# OpenClaw stays on the ARM mini PC — MUST use mini LAN IP, not host.docker.internal
 	@openclaw host openclaw.iamfaulty.com
 	handle @openclaw {
 		reverse_proxy MINI_LAN_IP:18800
@@ -94,7 +91,7 @@
 		reverse_proxy MINI_LAN_IP:18800
 	}
 
-	# Edge UIs on Pi 5 (after edge migration)
+	# Edge UIs on edge SBC (after edge migration)
 	@uptime host uptime.iamfaulty.com
 	handle @uptime {
 		reverse_proxy PI_LAN_IP:3001

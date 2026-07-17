@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 *.env
+!ops/stack-up.example.env
 secrets/
 
 # macOS noise

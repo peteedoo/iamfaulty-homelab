@@ -6,10 +6,10 @@
 Browser → Cloudflare (proxied) → cloudflared tunnel → reverse proxy → container
 ```
 
-All subdomains use the same tunnel (`3727ea81-b7a2-484c-8de9-3e55ab1a050c`).  
+All subdomains use the same tunnel (`<redacted>`).  
 DNS lives in Cloudflare. Local reverse proxy (Caddy / NPM) handles routing. Cloudflared connects the two.
 
-> **2026-07 migration:** LAN ad-blocking DNS is moving from the mini/OrbStack **blocky** instance to **Pi 5**. Move blocky **last** in the edge cluster — see [`migration-2026-07-14/edge-pi5/MIGRATE.md`](migration-2026-07-14/edge-pi5/MIGRATE.md). After cutover, point DHCP / clients at `PI_LAN_IP`, not the old resolver.
+> **2026-07 migration:** LAN ad-blocking DNS is moving from the mini/OrbStack **blocky** instance to **edge SBC**. Move blocky **last** in the edge cluster — see [`migration-2026-07-14/edge-sbc/MIGRATE.md`](migration-2026-07-14/edge-sbc/MIGRATE.md). After cutover, point DHCP / clients at `PI_LAN_IP`, not the old resolver.
 
 ---
 
@@ -17,8 +17,8 @@ DNS lives in Cloudflare. Local reverse proxy (Caddy / NPM) handles routing. Clou
 
 | Resolver | Address | Role | Status |
 |----------|---------|------|--------|
-| blocky (target: Pi 5) | `PI_LAN_IP` | Primary LAN DNS / ad-block | **Pending move — do last** |
-| AdGuard Home (legacy) | `192.168.68.90` | Prior primary on LAN | Retire when blocky on Pi is authoritative |
+| blocky (target: edge SBC) | `PI_LAN_IP` | Primary LAN DNS / ad-block | **Pending move — do last** |
+| AdGuard Home (legacy) | `<lan-ip:adguard>` | Prior primary on LAN | Retire when blocky on Pi is authoritative |
 | Tailscale | `100.64.0.2` | Tailscale peer names only | Avoid as general resolver |
 | Cloudflare fallback | `1.1.1.1` | Backup if local DNS is down | OK |
 
@@ -44,14 +44,14 @@ launchctl load ~/Library/LaunchAgents/com.iamfaulty.cloudflared.plist
 
 **2. Add DNS record in Cloudflare:**
 ```bash
-ZONE_ID="2cface8cc11ef684192831a76e905a6c"
+ZONE_ID="<redacted>"
 curl -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records" \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   --data '{
     "type": "CNAME",
     "name": "newservice",
-    "content": "3727ea81-b7a2-484c-8de9-3e55ab1a050c.cfargotunnel.com",
+    "content": "<redacted>.cfargotunnel.com",
     "proxied": true
   }'
 ```
@@ -79,14 +79,14 @@ curl -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records" \
 | Fix | Result |
 |-----|--------|
 | `tailscale set --accept-dns=false` | Didn't remove 100.64.0.2 from resolver list |
-| `networksetup -setdnsservers Wi-Fi 192.168.68.90 1.1.1.1` | Pinned correctly but Tailscale still intercepts |
+| `networksetup -setdnsservers Wi-Fi <lan-ip:adguard> 1.1.1.1` | Pinned correctly but Tailscale still intercepts |
 | Uncheck "Use Tailscale DNS settings" in Tailscale prefs | Still injected via network extension |
 | Set global nameserver in Tailscale admin panel | Didn't propagate in time |
 | Quit Tailscale entirely | Cleared the resolver — DNS worked |
 
 **Current state:** Tailscale DNS settings disabled in prefs. Wi-Fi DNS pinned to AdGuard + 1.1.1.1. If the issue recurs after Tailscale restarts, quit Tailscale and relaunch — the dead resolver entry clears.
 
-**Long-term fix:** In the Tailscale admin panel (`tailscale.com/admin/dns`), set the **current LAN DNS** (Pi blocky after cutover, or AdGuard `192.168.68.90` until then) as the global nameserver so Tailscale forwards there instead of its own resolver.
+**Long-term fix:** In the Tailscale admin panel (`tailscale.com/admin/dns`), set the **current LAN DNS** (edge SBC blocky after cutover, or AdGuard `<lan-ip:adguard>` until then) as the global nameserver so Tailscale forwards there instead of its own resolver.
 
 ---
 

@@ -1,4 +1,4 @@
-# Edge cluster — Raspberry Pi 5 (aarch64)
+# Edge cluster — ARM SBC (aarch64)
 # Deploy under e.g. /opt/homelab/docker-compose.yml
 #
 # Order:

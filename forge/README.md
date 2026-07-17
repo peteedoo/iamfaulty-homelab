@@ -67,7 +67,7 @@ Copy `.env.example` to `.env`:
 | Provider | Key needed | Best for |
 |----------|------------|----------|
 | **OpenAI** | Yes | GPT-4o, o3-mini — ChatGPT models, better UI |
-| **Ollama** | No | Local/private, M4 Mac mini |
+| **Ollama** | No | Local/private, Apple Silicon ARM mini PC |
 | **Anthropic** | Yes | Claude Sonnet/Haiku |
 | **OpenRouter** | Yes | Mix of models, one API |
 | **AnythingLLM** | Yes | Your existing homelab LLM stack |

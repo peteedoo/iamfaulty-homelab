@@ -1,4 +1,4 @@
-# Edge cluster → Pi 5
+# Edge cluster → edge SBC
 
 Target services (~363MB combined): **homeassistant**, **netalertx**, **speedtest-tracker**, **uptime-kuma**, **blocky**.
 
@@ -7,14 +7,14 @@ Target services (~363MB combined): **homeassistant**, **netalertx**, **speedtest
 ## Order
 
 1. Create Pi data dirs + copy configs from mini/NAS
-2. Deploy non-DNS services from [`reference/target-compose/edge-pi5/docker-compose.yml`](../../../reference/target-compose/edge-pi5/docker-compose.yml)
+2. Deploy non-DNS services from [`reference/target-compose/edge-sbc/docker-compose.yml`](../../../reference/target-compose/edge-sbc/docker-compose.yml)
 3. Point any reverse-proxy / homepage widgets at the Pi LAN IP
 4. Deploy **blocky** (same compose, profile `dns` — or uncomment ports)
 5. Parallel-run: temporarily point one test client at Pi `:53`
 6. Flip router DHCP DNS / static clients → Pi
 7. Only then stop blocky on the mini
 
-## Pre-flight on Pi 5
+## Pre-flight on edge SBC
 
 ```bash
 # Docker + compose plugin present
@@ -74,4 +74,4 @@ Rollback: leave old blocky running until DHCP flip is confirmed. DHCP clients ma
 
 Stop/remove edge containers only after Pi is authoritative for DNS and dashboards.
 
-Update [`ops/DNS.md`](../../DNS.md): primary resolver becomes the **Pi 5 LAN IP** (replace AdGuard `192.168.68.90` references if that IP retires).
+Update [`ops/DNS.md`](../../DNS.md): primary resolver becomes the **edge SBC LAN IP** (replace AdGuard `<lan-ip:adguard>` references if that IP retires).
