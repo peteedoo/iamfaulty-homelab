@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DealScout — Denver vape deals</title>
+<style>
+  :root {
+    --bg: #0e130f;
+    --panel: #151d17;
+    --panel-2: #1a241c;
+    --border: #263329;
+    --text: #e8efe9;
+    --muted: #8fa396;
+    --accent: #6ee7a0;
+    --accent-dim: #2e5c40;
+    --danger: #f2b8b5;
+    --badge: #123324;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
+  h1 { font-size: 24px; margin: 0; }
+  h1 .leaf { margin-right: 6px; }
+  #subtitle { color: var(--muted); font-size: 13px; }
+  .mockflag {
+    display: none; background: #4a3b12; color: #ffd97a; border-radius: 6px;
+    padding: 2px 8px; font-size: 12px; font-weight: 600;
+  }
+
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    margin: 16px 0 6px; padding: 10px; background: var(--panel);
+    border: 1px solid var(--border); border-radius: 10px;
+  }
+  .controls input[type="search"], .controls input[type="number"], .controls select {
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 7px 10px; font-size: 14px; outline: none;
+  }
+  .controls input[type="search"] { flex: 1 1 180px; min-width: 140px; }
+  .controls input[type="number"] { width: 92px; }
+  .chip {
+    cursor: pointer; user-select: none; border: 1px solid var(--border);
+    background: var(--panel-2); color: var(--muted); border-radius: 999px;
+    padding: 6px 12px; font-size: 13px;
+  }
+  .chip.on { background: var(--accent-dim); border-color: var(--accent); color: var(--text); }
+  button.refresh {
+    cursor: pointer; background: var(--accent-dim); color: var(--text);
+    border: 1px solid var(--accent); border-radius: 8px; padding: 7px 14px;
+    font-size: 14px;
+  }
+  button.refresh:disabled { opacity: .5; cursor: wait; }
+
+  .statusline { color: var(--muted); font-size: 13px; margin: 8px 2px; }
+  .errbox {
+    display: none; background: #2a1717; border: 1px solid #5c2e2e; color: var(--danger);
+    border-radius: 10px; padding: 10px 14px; margin: 10px 0; font-size: 13px;
+  }
+  .errbox summary { cursor: pointer; font-weight: 600; }
+  .errbox ul { margin: 8px 0 0; padding-left: 18px; }
+
+  .grid {
+    display: grid; gap: 12px; margin-top: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px; display: flex; flex-direction: column; gap: 8px;
+    transition: border-color .15s;
+  }
+  .card:hover { border-color: var(--accent-dim); }
+  .cardtop { display: flex; gap: 10px; }
+  .thumb {
+    width: 54px; height: 54px; border-radius: 10px; background: var(--panel-2);
+    display: flex; align-items: center; justify-content: center; font-size: 26px;
+    flex: none; overflow: hidden;
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .iname { font-weight: 600; font-size: 14px; }
+  .ibrand { color: var(--muted); font-size: 12px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tag {
+    font-size: 11px; background: var(--badge); color: var(--accent);
+    border-radius: 5px; padding: 2px 7px;
+  }
+  .tag.med { color: #9fc2ef; background: #14243a; }
+  .priceline { display: flex; align-items: baseline; gap: 8px; margin-top: auto; }
+  .price { font-size: 20px; font-weight: 700; color: var(--accent); }
+  .orig { color: var(--muted); text-decoration: line-through; font-size: 13px; }
+  .off {
+    background: var(--accent); color: #06220f; font-weight: 700; font-size: 12px;
+    border-radius: 5px; padding: 2px 6px;
+  }
+  .unit { color: var(--muted); font-size: 12px; }
+  .disp { color: var(--muted); font-size: 12.5px; display: flex; justify-content: space-between; gap: 6px; }
+  .disp a { color: var(--muted); }
+  .disp a:hover { color: var(--accent); }
+  .card > a.go { color: var(--accent); font-size: 13px; text-decoration: none; }
+  .card > a.go:hover { text-decoration: underline; }
+
+  .empty {
+    display: none; text-align: center; color: var(--muted); padding: 50px 20px;
+    border: 1px dashed var(--border); border-radius: 12px; margin-top: 14px;
+  }
+  footer { margin-top: 34px; color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--border); padding-top: 14px; }
+  footer a { color: var(--accent); }
+  .spin { display: inline-block; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="leaf">🌿</span>DealScout</h1>
+    <span id="subtitle">loading…</span>
+    <span class="mockflag" id="mockflag">MOCK DATA</span>
+  </header>
+
+  <div class="controls">
+    <input type="search" id="q" placeholder="Search product / brand / dispensary…">
+    <span class="chip on" id="chip-disposable" title="Disposable / all-in-one vapes only">Disposables only</span>
+    <span class="chip" id="chip-sale" title="Only items with detected sale pricing">On sale only</span>
+    <select id="sort">
+      <option value="price">Price ↑</option>
+      <option value="off">% off ↓</option>
+      <option value="distance">Distance ↑</option>
+      <option value="name">Name A–Z</option>
+    </select>
+    <input type="number" id="maxprice" placeholder="Max $" min="0" step="5">
+    <button class="refresh" id="refresh">↻ Refresh</button>
+  </div>
+
+  <div class="statusline" id="status">Loading deals…</div>
+  <details class="errbox" id="errbox">
+    <summary id="errsummary"></summary>
+    <ul id="errlist"></ul>
+  </details>
+
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty"></div>
+
+  <footer>
+    Data comes from Weedmaps' public consumer API (unofficial — may break without
+    notice) and is cached locally. Prices/availability can lag; confirm on the menu
+    before you drive. Also worth a look:
+    <a href="https://weedmaps.com/dispensaries/in/united-states/colorado/denver" target="_blank" rel="noopener">Weedmaps Denver</a> ·
+    <a href="https://www.leafly.com/deals" target="_blank" rel="noopener">Leafly deals</a>.
+    21+ only — enjoy responsibly.
+  </footer>
+</div>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const state = {
+  q: "", disposablesOnly: true, saleOnly: false,
+  sort: "price", maxPrice: null, data: null,
+};
+
+const fmt$ = (v) => v == null ? "—" : "$" + (Number.isInteger(v) ? v : v.toFixed(2));
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
+  (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+async function loadConfig() {
+  try {
+    const cfg = await (await fetch("/api/config")).json();
+    $("subtitle").textContent =
+      `disposable vape deals · ${cfg.lat.toFixed(3)}, ${cfg.lng.toFixed(3)} · ${cfg.radius_mi} mi radius`;
+    if (cfg.mock) $("mockflag").style.display = "inline-block";
+  } catch { /* non-fatal */ }
+}
+
+async function loadDeals(refresh = false) {
+  const btn = $("refresh");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin">↻</span> Loading…';
+  $("status").textContent = refresh
+    ? "Refreshing menus (first run can take ~30–60s)…" : "Loading deals…";
+  try {
+    const res = await fetch("/api/deals" + (refresh ? "?refresh=1" : ""));
+    state.data = await res.json();
+  } catch (e) {
+    state.data = { items: [], errors: [{ where: "dealscout server", error: String(e) }] };
+  }
+  btn.disabled = false;
+  btn.textContent = "↻ Refresh";
+  render();
+}
+
+function filtered() {
+  if (!state.data) return [];
+  let items = state.data.items || [];
+  if (state.disposablesOnly) items = items.filter((i) => i.is_disposable);
+  if (state.saleOnly) items = items.filter((i) => i.on_sale);
+  if (state.maxPrice != null)
+    items = items.filter((i) => i.price != null && i.price <= state.maxPrice);
+  if (state.q) {
+    const q = state.q.toLowerCase();
+    items = items.filter((i) =>
+      [i.name, i.brand, i.dispensary.name].join(" ").toLowerCase().includes(q));
+  }
+  const cmp = {
+    price: (a, b) => (a.price ?? 1e9) - (b.price ?? 1e9),
+    off: (a, b) => (b.percent_off ?? -1) - (a.percent_off ?? -1),
+    distance: (a, b) => (a.dispensary.distance_mi ?? 1e9) - (b.dispensary.distance_mi ?? 1e9),
+    name: (a, b) => a.name.localeCompare(b.name),
+  }[state.sort];
+  return [...items].sort(cmp);
+}
+
+function card(i) {
+  const d = i.dispensary;
+  const dist = d.distance_mi != null ? `${Number(d.distance_mi).toFixed(1)} mi` : "";
+  const lic = d.license_type ? `<span class="tag ${d.license_type === "medical" ? "med" : ""}">${esc(d.license_type)}</span>` : "";
+  const thumb = i.picture_url
+    ? `<img src="${esc(i.picture_url)}" alt="" loading="lazy" onerror="this.parentNode.textContent='🌿'">`
+    : "🌿";
+  return `<div class="card">
+    <div class="cardtop">
+      <div class="thumb">${thumb}</div>
+      <div>
+        <div class="iname">${esc(i.name)}</div>
+        ${i.brand ? `<div class="ibrand">${esc(i.brand)}</div>` : ""}
+      </div>
+    </div>
+    <div class="tags">
+      ${i.is_disposable ? '<span class="tag">disposable</span>' : '<span class="tag">vape</span>'}
+      ${i.on_sale ? '<span class="tag">on sale</span>' : ""}${lic}
+    </div>
+    <div class="priceline">
+      <span class="price">${fmt$(i.price)}</span>
+      ${i.original_price ? `<span class="orig">${fmt$(i.original_price)}</span>` : ""}
+      ${i.percent_off ? `<span class="off">-${i.percent_off}%</span>` : ""}
+      ${i.unit_label ? `<span class="unit">${esc(i.unit_label)}</span>` : ""}
+    </div>
+    <div class="disp">
+      <a href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.name)}</a>
+      <span>${dist}</span>
+    </div>
+    <a class="go" href="${esc(i.url)}" target="_blank" rel="noopener">View on menu ↗</a>
+  </div>`;
+}
+
+function render() {
+  const data = state.data || {};
+  const items = filtered();
+  $("grid").innerHTML = items.map(card).join("");
+
+  const empty = $("empty");
+  if (!items.length) {
+    const errs = (data.errors || []).length;
+    empty.innerHTML = errs
+      ? "No results — the upstream fetch had errors (see above).<br>Try <code>python3 server.py --probe</code> from this machine, or hit Refresh."
+      : "No matching items. Loosen the filters (turn off “Disposables only” / “On sale only”) or raise the max price.";
+    empty.style.display = "block";
+  } else {
+    empty.style.display = "none";
+  }
+
+  const when = data.generated_at
+    ? `updated ${Math.max(0, Math.round((Date.now() / 1000 - data.generated_at) / 60))} min ago` : "";
+  $("status").textContent =
+    `${items.length} deal${items.length === 1 ? "" : "s"} shown · ` +
+    `${(data.items || []).length} vape items across ${data.listings_scanned ?? 0} nearby menus · ${when}`;
+
+  const errs = data.errors || [];
+  const box = $("errbox");
+  if (errs.length) {
+    box.style.display = "block";
+    $("errsummary").textContent =
+      `${errs.length} upstream issue${errs.length === 1 ? "" : "s"} (data may be partial)`;
+    $("errlist").innerHTML = errs.slice(0, 12)
+      .map((e) => `<li><b>${esc(e.where)}</b>: ${esc(e.error)}</li>`).join("");
+  } else {
+    box.style.display = "none";
+  }
+}
+
+$("q").addEventListener("input", (e) => { state.q = e.target.value.trim(); render(); });
+$("maxprice").addEventListener("input", (e) => {
+  state.maxPrice = e.target.value === "" ? null : Number(e.target.value); render();
+});
+$("sort").addEventListener("change", (e) => { state.sort = e.target.value; render(); });
+$("chip-disposable").addEventListener("click", function () {
+  state.disposablesOnly = !state.disposablesOnly; this.classList.toggle("on"); render();
+});
+$("chip-sale").addEventListener("click", function () {
+  state.saleOnly = !state.saleOnly; this.classList.toggle("on"); render();
+});
+$("refresh").addEventListener("click", () => loadDeals(true));
+
+loadConfig();
+loadDeals();
+</script>
+</body>
+</html>
