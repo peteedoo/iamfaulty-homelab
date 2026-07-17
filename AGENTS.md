@@ -32,3 +32,8 @@ Non-obvious notes:
   editor (file tree + read/write/save via `/api/files/*`) works fully.
 - Vite uses `strictPort: true` on `5173`; if that port is taken the client fails
   to start rather than picking another port.
+- **Security: the API can run shell commands.** `/api/*` enforces a Host-header
+  allowlist and CORS, and honors an optional `FORGE_AUTH_TOKEN` bearer token, but
+  keep port `3100` bound to localhost and never expose it without a token. Note
+  `FORGE_WORKSPACE` only sets the *default* root — do not add any request-body
+  workspace override back.
