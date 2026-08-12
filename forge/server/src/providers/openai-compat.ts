@@ -11,21 +11,23 @@ interface OpenAIToolCall {
   function: { name: string; arguments: string };
 }
 
-export function toOpenAIMessage(msg: Message): Record<string, unknown> {
+export function toOpenAIMessages(msg: Message): Record<string, unknown>[] {
   if (typeof msg.content === "string") {
     const role = msg.role === "tool" ? "tool" : msg.role;
-    return { role, content: msg.content };
+    return [{ role, content: msg.content }];
   }
 
-  if (msg.content.some((b) => b.type === "tool_result")) {
-    return {
+  const toolResults = msg.content.filter(
+    (b): b is Extract<typeof b, { type: "tool_result" }> =>
+      b.type === "tool_result"
+  );
+  if (toolResults.length) {
+    // OpenAI requires one `tool` message per tool_call_id — never merge them.
+    return toolResults.map((b) => ({
       role: "tool",
-      tool_call_id: msg.content.find((b) => b.type === "tool_result")?.tool_use_id,
-      content: msg.content
-        .filter((b) => b.type === "tool_result")
-        .map((b) => (b as { content: string }).content)
-        .join("\n"),
-    };
+      tool_call_id: b.tool_use_id,
+      content: b.content,
+    }));
   }
 
   const text = msg.content
@@ -43,7 +45,7 @@ export function toOpenAIMessage(msg: Message): Record<string, unknown> {
 
   const result: Record<string, unknown> = { role: msg.role, content: text || null };
   if (toolCalls.length) result.tool_calls = toolCalls;
-  return result;
+  return [result];
 }
 
 export async function streamOpenAIChat(
@@ -63,7 +65,7 @@ export async function streamOpenAIChat(
     },
     body: JSON.stringify({
       model,
-      messages: messages.map(toOpenAIMessage),
+      messages: messages.flatMap(toOpenAIMessages),
       tools: tools.map((t) => ({
         type: "function",
         function: {

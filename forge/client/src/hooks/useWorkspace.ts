@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { TreeNode } from "../types";
+import { authHeaders } from "../lib/api";
 
 export function useWorkspace() {
   const [tree, setTree] = useState<TreeNode[]>([]);
@@ -9,7 +10,7 @@ export function useWorkspace() {
   const [loading, setLoading] = useState(false);
 
   const refreshTree = useCallback(async () => {
-    const res = await fetch("/api/files/tree");
+    const res = await fetch("/api/files/tree", { headers: authHeaders() });
     const data = await res.json();
     setTree(data.tree ?? []);
   }, []);
@@ -17,7 +18,9 @@ export function useWorkspace() {
   const openFile = useCallback(async (path: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/files/read?path=${encodeURIComponent(path)}`);
+      const res = await fetch(`/api/files/read?path=${encodeURIComponent(path)}`, {
+        headers: authHeaders(),
+      });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setActiveFile(path);
@@ -35,7 +38,7 @@ export function useWorkspace() {
       if (!activeFile) return;
       await fetch("/api/files/write", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ path: activeFile, content }),
       });
       setFileContent(content);

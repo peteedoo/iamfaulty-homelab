@@ -66,6 +66,9 @@ sudo ufw allow from <lan-subnet> to any port 11434 proto tcp
 sudo ufw reload
 ```
 
+> Ollama has no auth — binding `0.0.0.0` exposes an open inference endpoint. Keep
+> the `ufw` rule scoped to the trusted LAN subnet and never forward 11434 to WAN.
+
 ## Local organizer agent
 
 ```bash

@@ -60,6 +60,9 @@ Copy `.env.example` to `.env`:
 | `FORGE_MODEL` | `qwen2.5-coder:7b` | Model name |
 | `FORGE_API_KEY` | — | Required for cloud providers |
 | `FORGE_BASE_URL` | `http://127.0.0.1:11434` | Ollama or AnythingLLM URL |
+| `FORGE_AUTH_TOKEN` | — | If set, require `Authorization: Bearer <token>` on `/api/*` |
+| `FORGE_ALLOWED_HOSTS` | localhost | Extra Host header values allowed (comma-separated) |
+| `FORGE_ALLOWED_ORIGINS` | localhost dev | Extra browser Origins allowed (comma-separated) |
 | `PORT` | `3100` | Server port |
 
 ## Providers
@@ -131,9 +134,14 @@ Serves the built client from the Express server on port 3100.
 
 ## Security notes
 
-- The agent can run shell commands and write files — only point it at workspaces you trust
-- Path traversal is blocked (files must stay inside `FORGE_WORKSPACE`)
-- Destructive commands (`rm -rf /`, etc.) are blocked
+The API can run shell commands and write files, so treat the port as privileged:
+
+- **Keep it on localhost.** `docker-compose.yml` binds `127.0.0.1:3100`. Don't expose it to the LAN/WAN without auth.
+- **Set `FORGE_AUTH_TOKEN`** to require a bearer token on `/api/*`. The client sends it from `VITE_FORGE_AUTH_TOKEN` (build-time) or `localStorage.forge_auth_token`.
+- **CORS + Host allowlists** are enforced (defaults to localhost) to blunt CSRF / DNS-rebinding. Widen via `FORGE_ALLOWED_ORIGINS` / `FORGE_ALLOWED_HOSTS`.
+- Path traversal is blocked — files must stay inside `FORGE_WORKSPACE` (boundary-checked, not just a prefix match).
+- The `run_command` destructive-pattern list (`rm -rf /`, etc.) is a convenience guard, **not** a security boundary — the token + localhost binding are.
+- Only point the workspace at code you trust.
 
 ## License
 

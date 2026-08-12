@@ -13,6 +13,9 @@ services:
       - FORGE_MODEL=${FORGE_MODEL:-qwen2.5-coder:7b}
       - FORGE_BASE_URL=${FORGE_BASE_URL:-http://host.docker.internal:11434}
       - FORGE_API_KEY=${FORGE_API_KEY:-}
+      - FORGE_AUTH_TOKEN=${FORGE_AUTH_TOKEN:-}
+      - FORGE_ALLOWED_HOSTS=${FORGE_ALLOWED_HOSTS:-}
+      - FORGE_ALLOWED_ORIGINS=${FORGE_ALLOWED_ORIGINS:-}
       - PORT=3100
     extra_hosts:
       - "host.docker.internal:host-gateway"

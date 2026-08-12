@@ -1,6 +1,12 @@
 # Caddy on firewall-vm — rewrite host.docker.internal → LAN IPs after Mac strip.
 # Replace MINI_LAN_IP and PI_LAN_IP before deploy.
 # Services already on firewall-vm use 127.0.0.1 via host-gateway OR the published port on <lan-ip:firewall-vm>.
+#
+# This serves HTTP (:80) only. To enable HTTPS on the published :443, convert the
+# `host` matchers into per-site blocks keyed by hostname, e.g.
+#     jellyfin.iamfaulty.com { reverse_proxy <lan-ip:firewall-vm>:8096 }
+# which lets Caddy provision certs automatically (needs public DNS/ACME, or set
+# `tls internal` for a local CA). Until then, leave :443 unpublished.
 
 :80 {
 	@jellyfin host jellyfin.iamfaulty.com
@@ -55,9 +61,11 @@
 		reverse_proxy <lan-ip:firewall-vm>:5030
 	}
 
+	# homepage runs on the same firewall-vm and joins this `proxy` network, so
+	# reach it by service name (its published port is localhost-only).
 	@homepage host homepage.iamfaulty.com
 	handle @homepage {
-		reverse_proxy <lan-ip:firewall-vm>:3005
+		reverse_proxy homepage:3000
 	}
 
 	@planka host planka.iamfaulty.com

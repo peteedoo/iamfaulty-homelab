@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import type { AgentEvent, ChatMessage, ProviderInfo } from "../types";
+import { authHeaders, randomId } from "../lib/api";
 
 interface UseChatOptions {
   provider: string;
@@ -15,7 +16,7 @@ export function useChat({ provider, model, apiKey, onFileChange }: UseChatOption
   const abortRef = useRef<AbortController | null>(null);
 
   const loadProviders = useCallback(async (): Promise<ProviderInfo[]> => {
-    const res = await fetch("/api/chat/providers");
+    const res = await fetch("/api/chat/providers", { headers: authHeaders() });
     const data = await res.json();
     const list: ProviderInfo[] = data.providers ?? [];
     setProviders(list);
@@ -27,12 +28,12 @@ export function useChat({ provider, model, apiKey, onFileChange }: UseChatOption
       if (!text.trim() || isStreaming) return;
 
       const userMsg: ChatMessage = {
-        id: crypto.randomUUID(),
+        id: randomId(),
         role: "user",
         content: text,
       };
 
-      const assistantId = crypto.randomUUID();
+      const assistantId = randomId();
       setMessages((prev) => [
         ...prev,
         userMsg,
@@ -45,7 +46,7 @@ export function useChat({ provider, model, apiKey, onFileChange }: UseChatOption
       try {
         const res = await fetch("/api/chat", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: authHeaders({ "Content-Type": "application/json" }),
           signal: abortRef.current.signal,
           body: JSON.stringify({
             message: text,
@@ -86,7 +87,18 @@ export function useChat({ provider, model, apiKey, onFileChange }: UseChatOption
             }
 
             if (!data) continue;
-            const parsed = JSON.parse(data);
+            let parsed: unknown;
+            try {
+              parsed = JSON.parse(data);
+            } catch {
+              continue;
+            }
+
+            if (eventType === "error") {
+              const message =
+                (parsed as { message?: string }).message ?? "Unknown error";
+              throw new Error(message);
+            }
 
             if (eventType === "agent") {
               const event = parsed as AgentEvent;
