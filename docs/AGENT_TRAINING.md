@@ -1,3 +1,6 @@
+> **STATUS: STALE — 2026-07-31**
+> This document is in the defunct `~/dev/iamfaulty-homelab/` repo. NPM is decommissioned (Caddy is the reverse proxy). Paths and services may be outdated. See `~/homelab-data/STACK.md` for current state.
+>
 # Agent Stack Training: Homelab Infrastructure Operations
 
 **Purpose:** Train AI agents on real-world homelab infrastructure diagnosis, repair, and evolution.  

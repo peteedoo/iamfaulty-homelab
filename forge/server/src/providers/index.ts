@@ -19,6 +19,13 @@ export function createProvider(config: ProviderConfig): LLMProvider {
         config.model,
         config.baseUrl
       );
+    case "litellm":
+      // OpenAI-compatible gateway (AI-Bridge on :4000). Key defaults to sk-local.
+      return new OpenAIProvider(
+        config.apiKey ?? "sk-local",
+        config.model,
+        config.baseUrl ?? "http://127.0.0.1:4000/v1"
+      );
     case "anthropic":
       if (!config.apiKey) throw new Error("ANTHROPIC_API_KEY required");
       return new AnthropicProvider(config.apiKey, config.model);

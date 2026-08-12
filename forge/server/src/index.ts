@@ -1,8 +1,12 @@
 import "dotenv/config";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { randomUUID } from "node:crypto";
 import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import compression from "compression";
 import { chatRouter } from "./routes/chat.js";
 import { filesRouter } from "./routes/files.js";
 import { getWorkspaceRoot, setWorkspaceRoot } from "./utils/paths.js";
@@ -59,6 +63,32 @@ function originAllowed(origin: string): boolean {
 
 const app = express();
 
+// Trust the reverse proxy (Caddy) so req.ip resolves correctly for rate limiting.
+app.set("trust proxy", 1);
+
+// Security headers (CSP is set per-route since the Monaco editor needs inline styles).
+app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
+
+// Compression for all responses.
+app.use(compression());
+
+// Request ID — injects a unique ID per request for log correlation.
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const id = (req.headers["x-request-id"] as string) || randomUUID();
+  req.headers["x-request-id"] = id;
+  res.setHeader("X-Request-ID", id);
+  next();
+});
+
+// Rate limiting — 100 req/min per IP, 429 on exceed.
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests, slow down." },
+});
+
 app.use(
   cors({
     // Non-browser clients (curl, server-side) omit Origin — allow them; the
@@ -75,16 +105,7 @@ function hostAllowed(req: Request): boolean {
   return ALLOWED_HOSTS.has(host);
 }
 
-app.get("/api/health", (_req, res) => {
-  res.json({
-    ok: true,
-    name: "forge",
-    workspace: getWorkspaceRoot(),
-    authRequired: Boolean(AUTH_TOKEN),
-  });
-});
-
-// API guard: origin/DNS-rebinding checks + optional bearer token.
+// API guard: origin/DNS-rebinding checks + optional bearer token + rate limiting.
 app.use("/api", (req: Request, res: Response, next: NextFunction) => {
   const origin = req.headers.origin;
   if (origin && !originAllowed(origin)) {
@@ -106,8 +127,27 @@ app.use("/api", (req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+// Rate limit all /api routes.
+app.use("/api", apiLimiter);
+
+// Health endpoint — inside the guard so workspace path isn't leaked to
+// disallowed origins, but doesn't require auth so monitoring works.
+app.get("/api/health", (_req, res) => {
+  res.json({
+    ok: true,
+    name: "forge",
+    workspace: getWorkspaceRoot(),
+    authRequired: Boolean(AUTH_TOKEN),
+  });
+});
+
 app.use("/api/chat", chatRouter);
 app.use("/api/files", filesRouter);
+
+// JSON 404 for unknown /api/* routes (before the SPA catch-all).
+app.use("/api", (_req, res) => {
+  res.status(404).json({ error: "Not found" });
+});
 
 const clientDist = path.resolve(__dirname, "../../client/dist");
 app.use(express.static(clientDist));
@@ -117,7 +157,7 @@ app.get("*", (_req, res) => {
   });
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Forge running on http://localhost:${PORT}`);
   console.log(`Workspace: ${getWorkspaceRoot()}`);
   if (!AUTH_TOKEN) {
@@ -128,3 +168,24 @@ app.listen(PORT, () => {
     );
   }
 });
+
+// Process-level error handlers — prevent silent crashes.
+process.on("uncaughtException", (err) => {
+  console.error("[forge] Uncaught exception:", err);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("[forge] Unhandled rejection:", reason);
+});
+
+// Graceful shutdown — close connections on SIGTERM/SIGINT.
+function shutdown(signal: string) {
+  console.log(`[forge] ${signal} received, shutting down...`);
+  server.close(() => {
+    console.log("[forge] Server closed.");
+    process.exit(0);
+  });
+  // Force exit after 5s if connections don't close.
+  setTimeout(() => process.exit(1), 5000).unref();
+}
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));

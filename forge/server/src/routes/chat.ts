@@ -101,8 +101,12 @@ chatRouter.get("/providers", (_req, res) => {
       {
         id: "openrouter",
         name: "OpenRouter",
-        defaultModel: "anthropic/claude-sonnet-4",
+        defaultModel: "openai/gpt-oss-20b:free",
         models: [
+          "openai/gpt-oss-20b:free",
+          "google/gemma-4-31b-it:free",
+          "nvidia/nemotron-3-super-120b-a12b:free",
+          "cohere/north-mini-code:free",
           "anthropic/claude-sonnet-4",
           "google/gemini-2.5-pro-preview",
           "deepseek/deepseek-r1",
@@ -116,6 +120,13 @@ chatRouter.get("/providers", (_req, res) => {
         defaultModel: "default",
         models: ["default"],
         requiresKey: true,
+      },
+      {
+        id: "litellm",
+        name: "AI-Bridge (local LiteLLM)",
+        defaultModel: "qwen-heavy",
+        models: ["qwen-heavy", "gemma-fast", "deepthink", "gpt-oss", "coder", "mac-local"],
+        requiresKey: false,
       },
     ],
   });

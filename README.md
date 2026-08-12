@@ -1,3 +1,9 @@
+> **STATUS: STALE — 2026-07-30**
+> This file is outdated. For the current arr stack, see:
+> - `~/homelab-data/STACK.md` (live source of truth)
+> - `~/homelab-data/arr-stack/README.md` (correct commands from the Mac)
+> - `/home/peteedoo/homelab-data/arr-stack/` on `minifw` (192.168.68.64)
+
 # iamfaulty-homelab
 
 Self-hosted media and automation stack. **Compute is multi-node** (2026-07 migration): most containers run on **firewall-vm**; edge/DNS targets **edge SBC**; the ARM mini PC keeps only agent/inference survivors so OrbStack can quit for Metal.
@@ -68,18 +74,22 @@ See [`ops/migration-2026-07-14/MAC_TO_X86_CHECKLIST.md`](ops/migration-2026-07-1
 
 ## Bringing stacks up
 
+**All `docker compose` commands below must run on the target node, not on `iamfaulty-mini`.**
+
 ```bash
-# firewall-vm apps (example)
+# firewall-vm apps (example) — run on minifw (192.168.68.64)
+ssh minifw
 docker network create proxy 2>/dev/null || true
-docker compose -f /mnt/homelab/compose/jellyfin/docker-compose.yml up -d
+cd /mnt/homelab/compose/jellyfin && docker compose up -d
 # …other stacks under /mnt/homelab/compose/
 
-# edge SBC (non-DNS first; blocky last)
-docker compose -f /opt/homelab/docker-compose.yml --profile apps up -d
-docker compose -f /opt/homelab/docker-compose.yml --profile dns up -d
+# edge SBC (non-DNS first; blocky last) — run on the edge SBC
+ssh 192.168.68.82
+cd /opt/homelab && docker compose --profile apps up -d
+docker compose --profile dns up -d
 
-# mini survivors
-bash ~/iamfaulty-homelab/ops/stack-up.sh
+# mini survivors — run on iamfaulty-mini only
+# bash ~/iamfaulty-homelab/ops/stack-up.sh   # HISTORICAL — do not run; survivors are now in ~/dev/homelab-agent-stack/ per STACK.md
 ```
 
 Details: [`ops/STARTUP.md`](ops/STARTUP.md).
