@@ -1,1 +1,0 @@
-{"root":["./src/App.tsx","./src/main.tsx","./src/themes.ts","./src/types.ts","./src/vite-env.d.ts","./src/components/ChatPanel.tsx","./src/components/EditorPane.tsx","./src/components/FileTree.tsx","./src/components/ThemePicker.tsx","./src/components/monaco-theme.ts","./src/hooks/useChat.ts","./src/hooks/useTheme.ts","./src/hooks/useWorkspace.ts"],"version":"5.9.3"}

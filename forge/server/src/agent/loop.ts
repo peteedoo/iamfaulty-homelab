@@ -42,7 +42,6 @@ export async function runAgentLoop(
   for (let turn = 0; turn < MAX_TURNS; turn++) {
     onEvent({ type: "thinking", turn: turn + 1 });
 
-    let assistantText = "";
     const toolUses: ToolUseContent[] = [];
 
     const assistantMsg = await provider.streamChat(
@@ -50,7 +49,6 @@ export async function runAgentLoop(
       TOOL_DEFINITIONS,
       (event: StreamEvent) => {
         if (event.type === "text_delta" && event.text) {
-          assistantText += event.text;
           onEvent({ type: "text_delta", text: event.text });
         }
         if (event.type === "tool_use" && event.tool_use) {

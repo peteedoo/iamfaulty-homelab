@@ -1,3 +1,9 @@
+# STATUS: STALE — 2026-07-30
+# This file is outdated. For the current arr stack, see:
+# - `~/homelab-data/STACK.md` (live source of truth)
+# - `~/homelab-data/arr-stack/README.md` (correct commands from the Mac)
+# - `/home/peteedoo/homelab-data/arr-stack/` on `minifw` (192.168.68.64)
+
 services:
   # NOTE: the download-client service is intentionally omitted from this public copy.
 

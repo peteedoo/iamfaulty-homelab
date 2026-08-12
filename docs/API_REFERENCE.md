@@ -1,3 +1,6 @@
+> **STATUS: STALE — 2026-07-31**
+> This document is in the defunct `~/dev/iamfaulty-homelab/` repo. NPM is decommissioned (Caddy is the reverse proxy). Paths and services may be outdated. See `~/homelab-data/STACK.md` for current state.
+>
 # Homelab API Reference
 
 > **Living document.** When you add, remove, or change a service, update this file before pushing.

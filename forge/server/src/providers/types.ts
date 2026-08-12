@@ -44,7 +44,7 @@ export interface StreamEvent {
 }
 
 export interface ProviderConfig {
-  provider: "ollama" | "openai" | "anthropic" | "openrouter" | "anythingllm";
+  provider: "ollama" | "openai" | "litellm" | "anthropic" | "openrouter" | "anythingllm";
   model: string;
   apiKey?: string;
   baseUrl?: string;

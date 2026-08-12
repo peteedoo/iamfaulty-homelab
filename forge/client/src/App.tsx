@@ -37,6 +37,8 @@ export default function App() {
         setModel(ollama.defaultModel);
       }
     });
+    // loadProviders is wrapped in useCallback with [] deps — stable reference
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chat.loadProviders]);
 
   const handleProviderChange = (p: string) => {
