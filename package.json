@@ -1,0 +1,28 @@
+{
+  "name": "iamfaulty-homelab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Homelab config collection with Forge coding agent",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peteedoo/iamfaulty-homelab.git"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.3.0"
+  },
+  "lint-staged": {
+    "forge/server/src/**/*.ts": [
+      "cd forge && npx eslint --fix",
+      "cd forge && npx tsc --noEmit -p server/tsconfig.json"
+    ],
+    "forge/client/src/**/*.{ts,tsx}": [
+      "cd forge && npx eslint --fix",
+      "cd forge && npx tsc --noEmit -p client/tsconfig.json"
+    ]
+  }
+}
