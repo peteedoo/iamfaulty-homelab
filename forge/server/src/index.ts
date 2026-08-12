@@ -17,16 +17,18 @@ setWorkspaceRoot(workspace);
 
 const AUTH_TOKEN = process.env.FORGE_AUTH_TOKEN?.trim();
 
-// Origins allowed to make cross-origin browser requests. Same-origin (the
-// built client served from this server) and the Vite dev proxy don't need
-// this, so the default list is intentionally narrow.
-const ALLOWED_ORIGINS = (
-  process.env.FORGE_ALLOWED_ORIGINS ??
-  "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3100,http://127.0.0.1:3100"
-)
-  .split(",")
-  .map((o) => o.trim())
-  .filter(Boolean);
+// Extra browser Origins allowed on top of the built-ins below.
+const ALLOWED_ORIGINS = new Set(
+  [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3100",
+    "http://127.0.0.1:3100",
+  ]
+    .concat((process.env.FORGE_ALLOWED_ORIGINS ?? "").split(","))
+    .map((o) => o.trim())
+    .filter(Boolean)
+);
 
 // Host header allowlist — mitigates DNS-rebinding attacks that would let a
 // remote page reach this server via the victim's browser.
@@ -37,16 +39,33 @@ const ALLOWED_HOSTS = new Set(
     .filter(Boolean)
 );
 
+const PRIVATE_HOSTNAME =
+  /^(?:localhost|[^.]+\.local|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3}|\[::1\])$/;
+
+// Browsers send Origin on same-origin POST/PUT too, so a strict list would
+// break the UI whenever it is reached on anything but localhost (a LAN IP, a
+// hostname, or through the Vite proxy). Private/loopback origins are therefore
+// allowed: a page from a public origin — the case CORS defends against — never
+// matches, and DNS rebinding is covered by the Host allowlist above.
+function originAllowed(origin: string): boolean {
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+  try {
+    const hostname = new URL(origin).hostname.toLowerCase();
+    return ALLOWED_HOSTS.has(hostname) || PRIVATE_HOSTNAME.test(hostname);
+  } catch {
+    return false;
+  }
+}
+
 const app = express();
 
 app.use(
   cors({
-    origin(origin, cb) {
-      // Non-browser clients (curl, server-side) omit Origin — allow them; the
-      // Host check and optional token still apply.
-      if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-      cb(new Error(`Origin not allowed: ${origin}`));
-    },
+    // Non-browser clients (curl, server-side) omit Origin — allow them; the
+    // Host check and optional token still apply. Disallowed origins get no CORS
+    // headers (so the browser blocks them) and a 403 from the guard below,
+    // rather than an Express 500 with a stack trace.
+    origin: (origin, cb) => cb(null, !origin || originAllowed(origin)),
   })
 );
 app.use(express.json({ limit: "10mb" }));
@@ -65,8 +84,13 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
-// API guard: DNS-rebinding host check + optional bearer token.
+// API guard: origin/DNS-rebinding checks + optional bearer token.
 app.use("/api", (req: Request, res: Response, next: NextFunction) => {
+  const origin = req.headers.origin;
+  if (origin && !originAllowed(origin)) {
+    res.status(403).json({ error: `Origin not allowed: ${origin}` });
+    return;
+  }
   if (!hostAllowed(req)) {
     res.status(403).json({ error: "Host not allowed" });
     return;
