@@ -1,7 +1,12 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { Router } from "express";
-import { getWorkspaceRoot, resolveWorkspacePath, toRelativePath } from "../utils/paths.js";
+import {
+  getWorkspaceRoot,
+  isInsideWorkspace,
+  resolveWorkspacePath,
+  toRelativePath,
+} from "../utils/paths.js";
 
 export const filesRouter = Router();
 
@@ -67,6 +72,10 @@ async function buildTree(absDir: string, relDir: string): Promise<TreeNode[]> {
     if (IGNORE.has(entry.name) || entry.name.startsWith(".")) continue;
 
     const relPath = relDir === "." ? entry.name : `${relDir}/${entry.name}`;
+
+    // A symlink can point outside the workspace; don't advertise what the
+    // read/write routes will refuse anyway.
+    if (entry.isSymbolicLink() && !isInsideWorkspace(relPath)) continue;
 
     if (entry.isDirectory()) {
       const children = await buildTree(path.join(absDir, entry.name), relPath);

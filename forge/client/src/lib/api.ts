@@ -17,6 +17,20 @@ export function authHeaders(
   return token ? { ...base, Authorization: `Bearer ${token}` } : { ...base };
 }
 
+// Turns a non-2xx API response into an Error carrying the server's message,
+// so callers never treat a 401/403/500 as a successful empty result.
+export async function assertOk(res: Response): Promise<Response> {
+  if (res.ok) return res;
+  let detail = "";
+  try {
+    const body = (await res.clone().json()) as { error?: string };
+    detail = body.error ?? "";
+  } catch {
+    detail = "";
+  }
+  throw new Error(detail || `Request failed (${res.status} ${res.statusText})`);
+}
+
 // crypto.randomUUID is only defined in secure contexts (https / localhost).
 // Fall back so the UI keeps working over plain http on a LAN IP.
 export function randomId(): string {

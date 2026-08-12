@@ -49,6 +49,14 @@ export default function App() {
 
   return (
     <div className={`app ${hasEditor ? "editor-open" : "chat-focus"}`}>
+      {workspace.error && (
+        <div className="workspace-error" role="alert">
+          <span>{workspace.error}</span>
+          <button type="button" onClick={workspace.dismissError}>
+            Dismiss
+          </button>
+        </div>
+      )}
       <aside className="sidebar">
         <div className="sidebar-header">
           <span className="logo"><span>Forge</span></span>

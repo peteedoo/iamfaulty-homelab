@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import type { AgentEvent, ChatMessage, ProviderInfo } from "../types";
-import { authHeaders, randomId } from "../lib/api";
+import { assertOk, authHeaders, randomId } from "../lib/api";
 
 interface UseChatOptions {
   provider: string;
@@ -17,6 +17,10 @@ export function useChat({ provider, model, apiKey, onFileChange }: UseChatOption
 
   const loadProviders = useCallback(async (): Promise<ProviderInfo[]> => {
     const res = await fetch("/api/chat/providers", { headers: authHeaders() });
+    if (!res.ok) {
+      setProviders([]);
+      return [];
+    }
     const data = await res.json();
     const list: ProviderInfo[] = data.providers ?? [];
     setProviders(list);
@@ -61,6 +65,8 @@ export function useChat({ provider, model, apiKey, onFileChange }: UseChatOption
             },
           }),
         });
+
+        await assertOk(res);
 
         const reader = res.body?.getReader();
         if (!reader) throw new Error("No stream");
