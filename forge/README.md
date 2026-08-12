@@ -139,6 +139,7 @@ The API can run shell commands and write files, so treat the port as privileged:
 - **Keep it on localhost.** `docker-compose.yml` binds `127.0.0.1:3100`. Don't expose it to the LAN/WAN without auth.
 - **Set `FORGE_AUTH_TOKEN`** to require a bearer token on `/api/*`. The client sends it from `VITE_FORGE_AUTH_TOKEN` (build-time) or `localStorage.forge_auth_token`.
 - **CORS + Host allowlists** are enforced to blunt CSRF / DNS-rebinding. Origins are accepted from localhost and private/LAN addresses (a public page — the CORS threat — never matches); the Host allowlist is localhost-only, so reaching Forge on a LAN address or hostname requires adding it to `FORGE_ALLOWED_HOSTS`. Both accept extra values via `FORGE_ALLOWED_ORIGINS` / `FORGE_ALLOWED_HOSTS`.
+- **On an untrusted LAN, set `FORGE_AUTH_TOKEN`.** Because any private/`*.local` origin is trusted, a hostile page on another LAN device can make cross-origin calls to your `localhost:3100`. The token is the control that stops it.
 - Path traversal is blocked — files must stay inside `FORGE_WORKSPACE`. Real paths are compared, so a symlink inside the workspace pointing outside it is refused (and hidden from the file tree).
 - The `run_command` destructive-pattern list (`rm -rf /`, etc.) is a convenience guard, **not** a security boundary — the token + localhost binding are.
 - Only point the workspace at code you trust.
