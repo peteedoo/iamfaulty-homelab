@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mini]
     environment: production
     steps:
       - uses: actions/checkout@v4
@@ -31,27 +31,19 @@ jobs:
           echo "message=$(git log -1 --pretty=%s)" >> $GITHUB_OUTPUT
           echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
 
-      - name: Setup SSH
+      - name: Build Forge
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
-
-      - name: Deploy to mini
-        id: deploy
-        run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'REMOTE'
-          set -euo pipefail
-          cd /Users/peteedoo/dev/homelab/iamfaulty-homelab
-          git fetch origin
-          git checkout ${{ steps.meta.outputs.sha }}
           cd forge
           npm ci
           npm run build
+
+      - name: Restart Forge service
+        run: |
           launchctl kickstart -k gui/$(id -u)/com.peteedoo.forge
           sleep 3
-          # Health check
+
+      - name: Health check
+        run: |
           for i in {1..10}; do
             if curl -sf --max-time 3 http://127.0.0.1:3110/api/health >/dev/null 2>&1; then
               echo "Forge healthy on :3110"
@@ -61,7 +53,6 @@ jobs:
           done
           echo "Forge failed health check" >&2
           exit 1
-          REMOTE
 
       - name: Deployment summary
         run: |
