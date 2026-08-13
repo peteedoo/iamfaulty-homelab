@@ -1,0 +1,84 @@
+name: CI Failure Notification
+
+on:
+  workflow_run:
+    workflows: ["CI", "Deploy", "Rollback"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - name: Send failure notification
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const repo = context.repo.repo;
+            const owner = context.repo.owner;
+            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${run.id}`;
+            const commitSha = run.head_sha.substring(0, 7);
+
+            const message = [
+              `Forge CI/CD failure: ${run.name}`,
+              `Branch: ${run.head_branch}`,
+              `Commit: ${commitSha}`,
+              `Conclusion: ${run.conclusion}`,
+              `URL: ${runUrl}`,
+            ].join('\n');
+
+            core.setOutput('message', message);
+            core.notice(message);
+
+      - name: Create issue on failure
+        if: ${{ !github.event.workflow_run.referenced_workflows }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const repo = context.repo.repo;
+            const owner = context.repo.owner;
+            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${run.id}`;
+            const commitSha = run.head_sha.substring(0, 7);
+
+            // Check if an open issue already exists for this run
+            const issues = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              state: 'open',
+              labels: ['ci-failure'],
+              per_page: 50,
+            });
+
+            const existing = issues.data.find(i =>
+              i.title.includes(`#${run.id}`)
+            );
+
+            if (existing) {
+              core.info(`Issue already exists: ${existing.html_url}`);
+              return;
+            }
+
+            await github.rest.issues.create({
+              owner,
+              repo,
+              title: `CI/CD Failure: ${run.name} #${run.id}`,
+              body: [
+                `## CI/CD Failure`,
+                ``,
+                `- **Workflow:** ${run.name}`,
+                `- **Branch:** ${run.head_branch}`,
+                `- **Commit:** ${commitSha}`,
+                `- **Conclusion:** ${run.conclusion}`,
+                `- **Run URL:** ${runUrl}`,
+                ``,
+                `This issue was auto-created by the failure notification workflow.`,
+              ].join('\n'),
+              labels: ['ci-failure', 'automated'],
+            });

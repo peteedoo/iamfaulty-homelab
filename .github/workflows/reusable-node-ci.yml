@@ -1,0 +1,124 @@
+name: Reusable CI — Node.js
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: 'Working directory for npm commands'
+        required: false
+        default: '.'
+        type: string
+      node-version:
+        description: 'Node.js version'
+        required: false
+        default: '22'
+        type: string
+      run-lint:
+        description: 'Run lint job'
+        required: false
+        default: true
+        type: boolean
+      run-typecheck:
+        description: 'Run typecheck job'
+        required: false
+        default: true
+        type: boolean
+      run-build:
+        description: 'Run build job'
+        required: false
+        default: true
+        type: boolean
+      run-test:
+        description: 'Run test job'
+        required: false
+        default: true
+        type: boolean
+      run-security-audit:
+        description: 'Run npm audit'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    if: ${{ inputs.run-lint }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+
+  typecheck:
+    if: ${{ inputs.run-typecheck }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+
+  build:
+    if: ${{ inputs.run-build }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  test:
+    if: ${{ inputs.run-test }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+      - run: npm ci
+      - run: npm run test
+
+  security-audit:
+    if: ${{ inputs.run-security-audit }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+          cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+      - run: npm ci
+      - run: npm audit --audit-level=moderate
