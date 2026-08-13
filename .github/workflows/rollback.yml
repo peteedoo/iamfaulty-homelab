@@ -1,0 +1,67 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to roll back to (commit SHA or tag)'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate target ref exists
+        run: |
+          if ! git cat-file -e "${{ inputs.ref }}"; then
+            echo "Ref ${{ inputs.ref }} does not exist in repository" >&2
+            exit 1
+          fi
+          echo "Rolling back to: $(git log -1 --pretty='%h %s' ${{ inputs.ref }})"
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Rollback on mini
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'REMOTE'
+          set -euo pipefail
+          cd /Users/peteedoo/dev/homelab/iamfaulty-homelab
+          git fetch origin
+          git checkout ${{ inputs.ref }}
+          cd forge
+          npm ci
+          npm run build
+          launchctl kickstart -k gui/$(id -u)/com.peteedoo.forge
+          sleep 3
+          # Health check
+          for i in {1..10}; do
+            if curl -sf --max-time 3 http://127.0.0.1:3110/api/health >/dev/null 2>&1; then
+              echo "Forge healthy on :3110 after rollback"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Forge failed health check after rollback" >&2
+          exit 1
+          REMOTE
+
+      - name: Rollback summary
+        run: |
+          echo "## Rollback Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Rolled back to:** ${{ inputs.ref }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Time:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** Rolled back and healthy" >> $GITHUB_STEP_SUMMARY

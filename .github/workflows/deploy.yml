@@ -1,0 +1,73 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to deploy (commit SHA, branch, or tag)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          fetch-depth: 0
+
+      - name: Record deploy metadata
+        id: meta
+        run: |
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          echo "short_sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "message=$(git log -1 --pretty=%s)" >> $GITHUB_OUTPUT
+          echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Deploy to mini
+        id: deploy
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} <<'REMOTE'
+          set -euo pipefail
+          cd /Users/peteedoo/dev/homelab/iamfaulty-homelab
+          git fetch origin
+          git checkout ${{ steps.meta.outputs.sha }}
+          cd forge
+          npm ci
+          npm run build
+          launchctl kickstart -k gui/$(id -u)/com.peteedoo.forge
+          sleep 3
+          # Health check
+          for i in {1..10}; do
+            if curl -sf --max-time 3 http://127.0.0.1:3110/api/health >/dev/null 2>&1; then
+              echo "Forge healthy on :3110"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Forge failed health check" >&2
+          exit 1
+          REMOTE
+
+      - name: Deployment summary
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ steps.meta.outputs.short_sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Message:** ${{ steps.meta.outputs.message }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Time:** ${{ steps.meta.outputs.timestamp }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** Deployed and healthy" >> $GITHUB_STEP_SUMMARY
