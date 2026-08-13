@@ -16,14 +16,13 @@ All changes to Forge pass through automated quality gates. No gate can be skippe
 
 ### Deployment
 
-- **Deploy workflow** (`.github/workflows/deploy.yml`): triggers on push to `main` or manual dispatch. SSHs into the mini, pulls the commit, rebuilds, restarts the launchd service, and runs a health check.
+- **Self-hosted runner**: A GitHub Actions runner (`iamfaulty-mini`) runs directly on the mini via launchd. Deploy and rollback workflows execute locally — no SSH required.
+- **Deploy workflow** (`.github/workflows/deploy.yml`): triggers on push to `main` or manual dispatch. Checks out the commit, builds Forge, restarts the launchd service, and runs a health check against `/api/health`.
 - **Rollback workflow** (`.github/workflows/rollback.yml`): manual dispatch with a target ref. Checks out that commit, rebuilds, restarts, and health-checks.
 
-### Required secrets (repo settings → Environments → production)
+### No secrets required
 
-- `DEPLOY_SSH_KEY` — private SSH key for the mini
-- `DEPLOY_HOST` — mini hostname or IP
-- `DEPLOY_USER` — SSH user
+The self-hosted runner approach eliminates the need for SSH keys or host configuration. The `production` environment can be used for approval gates if desired.
 
 ### Failure notifications
 
