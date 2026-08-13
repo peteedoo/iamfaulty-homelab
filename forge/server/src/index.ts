@@ -116,6 +116,11 @@ app.use("/api", (req: Request, res: Response, next: NextFunction) => {
     res.status(403).json({ error: "Host not allowed" });
     return;
   }
+  // Health endpoint is exempt from auth so monitoring/deploy checks work.
+  if (req.path === "/health") {
+    next();
+    return;
+  }
   if (AUTH_TOKEN) {
     const header = req.headers.authorization ?? "";
     const token = header.startsWith("Bearer ") ? header.slice(7).trim() : "";
